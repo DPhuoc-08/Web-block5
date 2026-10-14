@@ -1,0 +1,47 @@
+<% const isEdit = id !== null; -%>
+<%- include("../../partials/header", { title: isEdit ? "Sửa món" : "Thêm món" }) %>
+
+<p><a href="/admin/dishes">← Danh sách món</a></p>
+<h1><%= isEdit ? "Sửa món" : "Thêm món" %></h1>
+
+<% if (Object.keys(errors).length) { %>
+  <p class="alert">Dữ liệu chưa hợp lệ, vui lòng sửa các trường bên dưới.</p>
+<% } %>
+
+<%# Thêm: POST /admin/dishes. Sửa: vẫn POST nhưng kèm ?_method=PATCH để method-override đổi thành PATCH.
+    Không đặt required/min trên input: kiểm tra dữ liệu do server làm (trả 400 nếu sai). %>
+<form class="stack" method="POST" action="<%= isEdit ? `/admin/dishes/${id}?_method=PATCH` : "/admin/dishes" %>">
+  <label>
+    Tên món
+    <input name="name" value="<%= values.name %>">
+    <% if (errors.name) { %><span class="error"><%= errors.name %></span><% } %>
+  </label>
+
+  <label>
+    Giá (đồng)
+    <input name="price" type="number" value="<%= values.price %>" placeholder="50000">
+    <% if (errors.price) { %><span class="error"><%= errors.price %></span><% } %>
+  </label>
+
+  <label>
+    Loại
+    <input name="category" value="<%= values.category %>" placeholder="Món nước, Món cơm...">
+  </label>
+
+  <label>
+    Mô tả
+    <textarea name="description" rows="3"><%= values.description %></textarea>
+  </label>
+
+  <label class="inline">
+    <input name="available" type="checkbox" <%= values.available ? "checked" : "" %>>
+    Đang phục vụ
+  </label>
+
+  <div>
+    <button><%= isEdit ? "Lưu" : "Thêm" %></button>
+    <a href="/admin/dishes">Huỷ</a>
+  </div>
+</form>
+
+<%- include("../../partials/footer") %>

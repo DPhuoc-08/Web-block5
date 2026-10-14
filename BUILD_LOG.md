@@ -91,3 +91,38 @@
 
 **Điều chưa chắc:**
 - Header chưa có link "Quản trị" vì `/admin` chưa tồn tại; thêm ở bước 3.
+
+## Bước 3 — CRUD món ăn (`/admin/dishes`)
+**Đã làm:** `src/routes/admin/dishes.js`, `src/validators/dish.js`, `isNotFound` trong `src/db.js`, `methodOverride("_method")` trong `app.js`; view `admin/dishes/index`, `form` (dùng chung thêm/sửa), `delete`; header thêm link "Quản trị".
+
+**Luồng ghi (Post/Redirect/Get):**
+- Thêm: `POST /admin/dishes` → `validateDish(req.body)` → lỗi: `400` + render lại form giữ giá trị → hợp lệ: `await create` → `303` sang `/dishes/:id`.
+- Sửa: form `POST ...?_method=PATCH` → method-override đổi thành `PATCH` → `parseId` → kiểm tra tồn tại (`404`) → validate (`400`) → `await update` → `303` sang `/dishes/:id`.
+- Xoá: link GET mở trang xác nhận → nút `formaction="...?_method=DELETE"` → `DELETE` → `await delete` → `303` về `/admin/dishes`.
+
+**Đã kiểm tra (curl):**
+| Trường hợp | Kết quả |
+| :--- | :--- |
+| Tên trống / giá âm / giá `abc` / giá `1.5` / form rỗng | `400`, hiện lỗi đúng trường, giữ giá trị đã nhập |
+| Thêm hợp lệ kèm trường lạ `id=1`, `createdAt` | `303` sang `/dishes/13`; trường lạ bị bỏ qua (id do DB sinh) |
+| Không tick "Đang phục vụ" | Lưu `available = false` |
+| Sửa hợp lệ | `303` sang `/dishes/:id`, dữ liệu mới hiển thị đúng |
+| Sửa/xoá/mở form với id `abc` hoặc `999999` | `404` |
+| Mở trang xác nhận xoá (GET) | `200`, món vẫn còn |
+| `GET ...?_method=DELETE` | Không xoá (method-override chỉ đổi request POST) |
+| Xoá | `303` về danh sách; xoá lần 2 → `404` |
+| `fetch` / `XMLHttpRequest` / `<script>` trong `src/views` | 0 chỗ |
+
+**Quyết định và lý do:**
+- **`validateDish` trả `data` / `errors` / `values`:** `data` chỉ gồm 5 cột được phép, không đưa nguyên `req.body` vào Prisma; `values` giữ chuỗi người dùng gõ (vd. giá `"1.5"`) để render lại form khi `400`.
+- **Giá chỉ nhận chữ số (`^\d+$`)**, ≤ giới hạn `Int`. `Number()` một mình nhận `"1e3"`, `" 5"`, `""` (= 0).
+- **Trường rỗng `description`, `category` → `null`**, không lưu chuỗi rỗng.
+- **Không đặt `required`/`min` trên input:** để server là nơi kiểm tra; trên trình duyệt vẫn thử được trường hợp `400`. (`type="number"` vẫn chặn ký tự chữ ở trình duyệt.)
+- **PATCH kiểm tra tồn tại trước validate:** id không tồn tại → `404`, không render form sửa cho bản ghi không có.
+- **Bắt `P2025` khi update/delete** (bản ghi bị xoá ở tab khác giữa chừng) → `404` thay vì `500`.
+- **Form sửa dùng `action="...?_method=PATCH"`; trang xoá dùng `formaction` trên nút** như ví dụ `block5.md`. Hai cách tương đương.
+
+**Phương án đã bỏ:**
+- Nút xoá ngay trong form sửa (như ví dụ `formaction` của `block5.md`): bỏ qua bước xác nhận mà đề bắt buộc.
+
+**Dữ liệu:** món thử "Bún bò Huế" (id 13) và "Cà phê sữa đá" (id 14) tạo khi test đã được xoá; DB còn đúng 6 món seed.

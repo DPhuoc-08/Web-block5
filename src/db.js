@@ -13,3 +13,6 @@ const ca = readFileSync(new URL("../certs/supabase-ca.crt", import.meta.url), "u
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL, ssl: { ca } });
 
 export const prisma = new PrismaClient({ adapter });
+
+// P2025: update/delete vào bản ghi không còn tồn tại (vd. vừa bị xoá ở tab khác) → route trả 404 thay vì 500.
+export const isNotFound = (err) => err?.code === "P2025";

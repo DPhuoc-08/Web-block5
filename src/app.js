@@ -1,6 +1,8 @@
 import express from "express";
+import methodOverride from "method-override";
 import { fileURLToPath } from "node:url";
 import dishesRouter from "./routes/dishes.js";
+import adminDishesRouter from "./routes/admin/dishes.js";
 
 const app = express();
 
@@ -10,8 +12,14 @@ app.set("views", fileURLToPath(new URL("./views", import.meta.url)));
 // Parse body của form HTML (application/x-www-form-urlencoded) thành req.body.
 app.use(express.urlencoded({ extended: false }));
 
+// Form HTML chỉ gửi được GET/POST. Browser gửi POST kèm ?_method=PATCH|DELETE,
+// middleware đổi req.method trước khi tới router để khớp router.patch / router.delete.
+// Phải đặt trước các router.
+app.use(methodOverride("_method"));
+
 app.get("/", (req, res) => res.redirect("/dishes"));
 app.use(dishesRouter);
+app.use("/admin/dishes", adminDishesRouter);
 
 // Không route nào khớp → 404.
 app.use((req, res) => {

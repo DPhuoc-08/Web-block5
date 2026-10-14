@@ -1,0 +1,34 @@
+<%- include("../../partials/header", { title: "Quản trị món ăn" }) %>
+
+<div class="toolbar">
+  <h1>Món ăn</h1>
+  <a href="/admin/dishes/new">+ Thêm món</a>
+</div>
+
+<% if (dishes.length === 0) { %>
+  <p class="muted">Chưa có món nào.</p>
+<% } else { %>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Tình trạng</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% dishes.forEach(d => { %>
+        <tr>
+          <td><%= d.id %></td>
+          <td><a href="/dishes/<%= d.id %>"><%= d.name %></a></td>
+          <td><%= d.price.toLocaleString("vi-VN") %>đ</td>
+          <td><%= d.category ?? "—" %></td>
+          <td><%= d.available ? "Đang phục vụ" : "Tạm hết" %></td>
+          <%# Hai link GET chỉ mở trang (form sửa, trang xác nhận xoá); việc ghi diễn ra ở form trên các trang đó. %>
+          <td class="actions">
+            <a href="/admin/dishes/<%= d.id %>/edit">Sửa</a>
+            <a href="/admin/dishes/<%= d.id %>/delete">Xoá</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } %>
+
+<%- include("../../partials/footer") %>
