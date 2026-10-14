@@ -1,5 +1,19 @@
+# Thư viện cài bằng `npm install` (tạo lại từ package-lock.json)
 node_modules/
-.env
-# Prisma Client sinh ra từ schema, tạo lại bằng `npx prisma generate`
+
+# Prisma Client sinh ra từ schema, tạo lại bằng `npx prisma generate` (tự chạy sau `npm install`)
 generated/
+
+# Biến môi trường chứa chuỗi kết nối: không bao giờ commit. Chỉ commit file mẫu.
+.env
+.env.*
+!.env.example
+
+# Log
+*.log
+npm-debug.log*
+
+# Hệ điều hành / editor
 .DS_Store
+.vscode/
+.idea/
