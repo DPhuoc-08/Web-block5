@@ -1,7 +1,6 @@
-const MAX_INT = 2147483647;
+import { str } from "./common.js";
 
-// Dữ liệu form luôn là chuỗi; trường lặp (`name=a&name=b`) thành mảng → coi như rỗng.
-const str = (v) => (typeof v === "string" ? v.trim() : "");
+const MAX_INT = 2147483647;
 
 // Nhận req.body, trả về:
 // - data:   object sạch, chỉ gồm các cột của Dish → đưa vào prisma.dish.create/update

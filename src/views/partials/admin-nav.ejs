@@ -1,0 +1,5 @@
+<nav class="admin-nav">
+  <% [["dishes", "Món ăn"], ["chefs", "Đầu bếp"], ["ingredients", "Nguyên liệu"]].forEach(([key, label]) => { %>
+    <a href="/admin/<%= key %>" class="<%= key === current ? "current" : "" %>"><%= label %></a>
+  <% }) %>
+</nav>

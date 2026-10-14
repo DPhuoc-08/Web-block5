@@ -3,6 +3,8 @@ import methodOverride from "method-override";
 import { fileURLToPath } from "node:url";
 import dishesRouter from "./routes/dishes.js";
 import adminDishesRouter from "./routes/admin/dishes.js";
+import adminChefsRouter from "./routes/admin/chefs.js";
+import adminIngredientsRouter from "./routes/admin/ingredients.js";
 
 const app = express();
 
@@ -19,7 +21,10 @@ app.use(methodOverride("_method"));
 
 app.get("/", (req, res) => res.redirect("/dishes"));
 app.use(dishesRouter);
+app.get("/admin", (req, res) => res.redirect("/admin/dishes"));
 app.use("/admin/dishes", adminDishesRouter);
+app.use("/admin/chefs", adminChefsRouter);
+app.use("/admin/ingredients", adminIngredientsRouter);
 
 // Không route nào khớp → 404.
 app.use((req, res) => {

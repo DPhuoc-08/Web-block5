@@ -4,6 +4,7 @@ import { Router } from "express";
 import { prisma, isNotFound } from "../../db.js";
 import { parseId } from "../../validators/id.js";
 import { validateDish, dishToValues } from "../../validators/dish.js";
+import { hasErrors } from "../../validators/common.js";
 
 const router = Router();
 
@@ -25,7 +26,7 @@ router.get("/new", (req, res) => {
 router.post("/", async (req, res) => {
   const { data, errors, values } = validateDish(req.body);
   // Input sai → 400, không ghi DB, render lại form giữ nguyên giá trị đã nhập.
-  if (Object.keys(errors).length) return renderForm(res, { status: 400, values, errors });
+  if (hasErrors(errors)) return renderForm(res, { status: 400, values, errors });
 
   // Phải await xong mới redirect; nếu create lỗi, Express chuyển sang error handler (500), không báo thành công.
   const created = await prisma.dish.create({ data });
@@ -51,7 +52,7 @@ router.patch("/:id", async (req, res) => {
   if (!exists) return notFound(res);
 
   const { data, errors, values } = validateDish(req.body);
-  if (Object.keys(errors).length) return renderForm(res, { status: 400, id, values, errors });
+  if (hasErrors(errors)) return renderForm(res, { status: 400, id, values, errors });
 
   try {
     await prisma.dish.update({ where: { id }, data });

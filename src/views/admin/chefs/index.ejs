@@ -1,0 +1,32 @@
+<%- include("../../partials/header", { title: "Quản trị đầu bếp" }) %>
+<%- include("../../partials/admin-nav", { current: "chefs" }) %>
+
+<div class="toolbar">
+  <h1>Đầu bếp</h1>
+  <a href="/admin/chefs/new">+ Thêm đầu bếp</a>
+</div>
+
+<% if (chefs.length === 0) { %>
+  <p class="muted">Chưa có đầu bếp nào.</p>
+<% } else { %>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Tên</th><th>Chuyên môn</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% chefs.forEach(c => { %>
+        <tr>
+          <td><%= c.id %></td>
+          <td><%= c.name %></td>
+          <td><%= c.specialty ?? "—" %></td>
+          <td class="actions">
+            <a href="/admin/chefs/<%= c.id %>/edit">Sửa</a>
+            <a href="/admin/chefs/<%= c.id %>/delete">Xoá</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } %>
+
+<%- include("../../partials/footer") %>

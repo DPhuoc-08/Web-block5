@@ -126,3 +126,41 @@
 - Nút xoá ngay trong form sửa (như ví dụ `formaction` của `block5.md`): bỏ qua bước xác nhận mà đề bắt buộc.
 
 **Dữ liệu:** món thử "Bún bò Huế" (id 13) và "Cà phê sữa đá" (id 14) tạo khi test đã được xoá; DB còn đúng 6 món seed.
+
+## Bước 4 — Nhân bản cho Đầu bếp và Nguyên liệu, đối chiếu nghiệm thu
+**Đã làm:** `routes/admin/chefs.js`, `routes/admin/ingredients.js`, `validators/chef.js`, `validators/ingredient.js`, `validators/common.js` (`str`, `hasErrors` dùng chung cho cả 3 validator); view `admin/chefs/*`, `admin/ingredients/*`, `partials/admin-nav.ejs`; `GET /admin` → redirect `/admin/dishes`.
+
+**Quyết định và lý do:**
+- **Mỗi thực thể một router + validator + thư mục view riêng**, cùng khuôn với món ăn (theo cấu trúc trong plan). Đọc riêng từng file vẫn thấy trọn luồng request.
+- **Thêm/sửa đầu bếp, nguyên liệu → `303` về danh sách** (không có trang chi tiết; đã chốt trong plan).
+- **Tách `str`, `hasErrors` sang `validators/common.js`:** 3 validator cùng dùng; món ăn chạy lại test hồi quy vẫn đúng.
+- **`GET /admin` redirect sang `/admin/dishes`** và thanh điều hướng 3 mục trên các trang danh sách admin: chỉ để đi lại giữa các trang, không thêm chức năng.
+
+**Phương án đã bỏ:**
+- Một hàm tạo router CRUD chung cho cả 3 thực thể: ít code hơn nhưng thêm một lớp trừu tượng, khó theo dõi luồng khi học; món ăn lại khác (có giá, checkbox, redirect sang trang chi tiết).
+
+**Đã kiểm tra:** script curl 25 phép thử cho mỗi thực thể (tên trống/toàn khoảng trắng → `400` giữ giá trị; trường lạ `id` bị bỏ; trường phụ rỗng → `null`; sửa/xoá/mở form với id `abc`, `999999` → `404`; GET trang xoá và `GET ?_method=DELETE` không xoá; xoá lần 2 → `404`): **chefs 25/25, ingredients 25/25**. Món ăn hồi quy: thêm/sửa/xoá/400 đúng. Dữ liệu test đã tự xoá; DB còn 6 món, 3 đầu bếp, 5 nguyên liệu.
+
+### Checklist review (`block5.md`)
+| Mục | Kết quả | Cách kiểm tra |
+| :--- | :--- | :--- |
+| Không có link/route `GET` thay đổi dữ liệu | ✅ | Quét handler `router.get`: không gọi `create/update/delete`; không thẻ `<a>` nào chứa `_method`; test `GET ?_method=DELETE` không xoá |
+| Sửa/xoá qua `PATCH`/`DELETE` bằng method-override | ✅ | `methodOverride("_method")` đặt trước router; form `?_method=PATCH`, `?_method=DELETE` |
+| Ghi thành công redirect `303` | ✅ | 9/9 `res.redirect` trong `routes/admin` đều `303` |
+| Template không có `fetch`/AJAX | ✅ | Không có `fetch(`, `XMLHttpRequest`, `<script>` trong `src/views` |
+| Không nối chuỗi input vào SQL | ✅ | Chỉ dùng hàm Prisma; không có `$queryRaw`/`$executeRaw` |
+| `req.body` được lọc, validate trước `create`/`update` | ✅ | Luôn qua `validateX(req.body).data`; test trường lạ `id`, `createdAt` bị bỏ |
+| Chuỗi kết nối không có trong mã nguồn, log, template | ✅ | `git grep` toàn bộ lịch sử: không có; `.env` chưa từng commit; log lỗi `500` không chứa chuỗi kết nối; không render `process.env`/`prisma` |
+
+### Tiêu chí nghiệm thu (`block5.md`)
+| # | Tiêu chí | Kết quả |
+| :--- | :--- | :--- |
+| 1 | Danh sách + chi tiết món chạy đúng; id sai định dạng/không tồn tại → 404 | ✅ Bước 2 |
+| 2 | CRUD đủ cho Món ăn, Đầu bếp, Nguyên liệu tại `/admin` | ✅ Bước 3, 4 |
+| 3 | Tạo `POST`, cập nhật `PATCH`, xoá `DELETE`; không AJAX/fetch | ✅ |
+| 4 | Input sai → `400` giữ dữ liệu trên form; thành công → `303` | ✅ |
+| 5 | Xoá có trang xác nhận; reload sau submit không gửi lại / tạo trùng | ✅ PRG `303` → F5 chỉ tải lại trang GET đích |
+
+**Điều chưa chắc / ngoài phạm vi:**
+- Bấm submit 2 lần thật nhanh hoặc 2 tab cùng gửi vẫn có thể tạo 2 bản ghi (PRG không chặn được). Đã chốt phương án A: không thêm unique constraint.
+- Tiêu chí 5 (F5) kiểm tra bằng thiết kế PRG + curl thấy `303`; nên thử thêm bằng trình duyệt thật.

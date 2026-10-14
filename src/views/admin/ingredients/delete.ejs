@@ -1,0 +1,12 @@
+<%- include("../../partials/header", { title: "Xoá nguyên liệu" }) %>
+
+<p><a href="/admin/ingredients">← Danh sách nguyên liệu</a></p>
+<h1>Xoá nguyên liệu “<%= ingredient.name %>”?</h1>
+<p>Thao tác này không khôi phục được.</p>
+
+<form method="POST">
+  <button class="danger" formaction="/admin/ingredients/<%= ingredient.id %>?_method=DELETE">Xoá</button>
+  <a href="/admin/ingredients">Huỷ</a>
+</form>
+
+<%- include("../../partials/footer") %>

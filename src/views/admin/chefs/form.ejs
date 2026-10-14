@@ -1,0 +1,29 @@
+<% const isEdit = id !== null; -%>
+<%- include("../../partials/header", { title: isEdit ? "Sửa đầu bếp" : "Thêm đầu bếp" }) %>
+
+<p><a href="/admin/chefs">← Danh sách đầu bếp</a></p>
+<h1><%= isEdit ? "Sửa đầu bếp" : "Thêm đầu bếp" %></h1>
+
+<% if (Object.keys(errors).length) { %>
+  <p class="alert">Dữ liệu chưa hợp lệ, vui lòng sửa các trường bên dưới.</p>
+<% } %>
+
+<form class="stack" method="POST" action="<%= isEdit ? `/admin/chefs/${id}?_method=PATCH` : "/admin/chefs" %>">
+  <label>
+    Tên đầu bếp
+    <input name="name" value="<%= values.name %>">
+    <% if (errors.name) { %><span class="error"><%= errors.name %></span><% } %>
+  </label>
+
+  <label>
+    Chuyên môn
+    <input name="specialty" value="<%= values.specialty %>" placeholder="Món nướng, Tráng miệng...">
+  </label>
+
+  <div>
+    <button><%= isEdit ? "Lưu" : "Thêm" %></button>
+    <a href="/admin/chefs">Huỷ</a>
+  </div>
+</form>
+
+<%- include("../../partials/footer") %>
