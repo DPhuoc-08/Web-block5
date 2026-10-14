@@ -23,3 +23,21 @@
 
 **Điều chưa chắc:**
 - `npm audit` báo 4 lỗi mức high, đều nằm trong Prisma CLI (dev): `deepmerge-ts` (gộp object đệ quy) và `mysql2` (dự án dùng Postgres, không gọi tới). Không chạy trong app → chấp nhận, theo dõi khi Prisma ra bản vá.
+
+## Bước 1b — Model và cấu hình Prisma
+**Đã làm:** `prisma/schema.prisma` (3 model `Dish`, `Chef`, `Ingredient`), `prisma.config.js`, `src/db.js`. Đã chạy `npx prisma validate` và `npx prisma generate` thành công; import `src/db.js` bằng Node thuần thấy đủ `prisma.dish/chef/ingredient`.
+
+**Quyết định và lý do:**
+- **Model:** `Dish` đúng mẫu `block5.md`. `Chef`, `Ingredient` theo cùng kiểu: `name` bắt buộc, trường còn lại `String?`; map tên bảng số nhiều (`chefs`, `ingredients`) như `dishes`.
+- **Generator `prisma-client`** (mặc định của Prisma 7), sinh client vào `generated/prisma`.
+- **Chuỗi kết nối ở 2 nơi, cùng đọc `DATABASE_URL`:** `prisma.config.js` cho CLI (`db push`, `db seed`); driver adapter `PrismaPg` trong `src/db.js` cho app. Prisma 7 không còn khai báo `url` trong `schema.prisma`.
+- **Một `PrismaClient` dùng chung** (`src/db.js`) để không mở nhiều pool kết nối.
+- **`prisma.config.js` thay vì `.ts`:** dự án viết JavaScript; Prisma CLI đọc được file `.js` (đã thấy "Loaded Prisma config from prisma.config.js").
+
+**Phương án đã bỏ:**
+- `env("DATABASE_URL")` của `prisma/config`: báo lỗi khi chưa có `.env` → `prisma generate` (lúc `npm install`) hỏng. Dùng `process.env.DATABASE_URL`.
+- Cài `tsx` để chạy client TypeScript mà Prisma sinh ra: không cần, Node 25 tự bỏ khai báo kiểu khi import file `.ts`.
+- Generator cũ `prisma-client-js` (sinh JS vào `node_modules`): Prisma đánh dấu deprecated.
+
+**Giả định:**
+- Cần Node có hỗ trợ chạy `.ts` trực tiếp (máy hiện tại: Node 25.2.1). Node quá cũ sẽ không import được `generated/prisma/client.ts`.

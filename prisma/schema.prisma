@@ -1,0 +1,41 @@
+// Code-first: model trong file này là nguồn của schema.
+// Đồng bộ lên Supabase bằng `npx prisma db push`, sau đó `npx prisma generate`.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+// Prisma 7: chuỗi kết nối không khai báo ở đây mà lấy từ prisma.config (cho CLI)
+// và từ driver adapter trong src/db.js (cho app).
+datasource db {
+  provider = "postgresql"
+}
+
+model Dish {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  category    String?
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("dishes")
+}
+
+model Chef {
+  id        Int     @id @default(autoincrement())
+  name      String
+  specialty String?
+
+  @@map("chefs")
+}
+
+model Ingredient {
+  id   Int     @id @default(autoincrement())
+  name String
+  unit String?
+
+  @@map("ingredients")
+}
