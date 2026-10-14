@@ -1,0 +1,24 @@
+<%- include("../partials/header", { title: dish.name }) %>
+
+<p><a href="/dishes">← Thực đơn</a></p>
+
+<h1><%= dish.name %></h1>
+
+<dl>
+  <dt>Giá</dt>
+  <dd><%= dish.price.toLocaleString("vi-VN") %>đ</dd>
+
+  <dt>Loại</dt>
+  <dd><%= dish.category ?? "—" %></dd>
+
+  <dt>Tình trạng</dt>
+  <dd>
+    <% if (dish.available) { %><span class="badge">Đang phục vụ</span>
+    <% } else { %><span class="badge off">Tạm hết</span><% } %>
+  </dd>
+
+  <dt>Mô tả</dt>
+  <dd><%= dish.description ?? "—" %></dd>
+</dl>
+
+<%- include("../partials/footer") %>

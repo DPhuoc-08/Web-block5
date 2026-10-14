@@ -64,3 +64,30 @@
 **Điều chưa chắc / cần biết:**
 - Chạy lại seed thì id không quay về 1 (Postgres không dùng lại giá trị autoincrement). Không ảnh hưởng vì link luôn lấy id từ database.
 - Nếu Supabase đổi chứng chỉ gốc (sau 2031 hoặc sớm hơn), cần tải lại file CA.
+
+## Bước 2 — Trang người dùng
+**Đã làm:** `src/app.js`, `src/routes/dishes.js`, `src/validators/id.js`; view `dishes/index`, `dishes/show`, `404`, `500`, `partials/header|footer`.
+
+**Luồng request:**
+- `GET /dishes` → đọc `req.query.q` → `findMany` (lọc `contains` + `insensitive` nếu có `q`) → render danh sách, mỗi món link `/dishes/:id`.
+- `GET /dishes/:id` → `parseId(req.params.id)` → sai định dạng: `404` ngay, không truy vấn → `findUnique` → `null`: `404` → render chi tiết.
+- Không route nào khớp → `404`. Lỗi trong handler → error handler (Express 5 tự chuyển lỗi async) → log stack, render `500`.
+
+**Đã kiểm tra (curl):**
+| Request | Kết quả |
+| :--- | :--- |
+| `/dishes`, `?q=phở`, `?q=khongco` | `200`; "phở" ra đúng "Phở bò tái"; không khớp hiện thông báo |
+| `?q=a&q=b` | `200`, coi như không lọc (đủ 6 món), không lỗi |
+| `/dishes/7` | `200`, đủ giá, loại, tình trạng, mô tả |
+| `/dishes/999999`, `abc`, `2.5`, `0`, `99999999999`, `/khong-co-trang` | `404` |
+| `?q=<script>` | Được escape thành `&lt;script&gt;` |
+| DB không kết nối được | `500`, HTML chỉ có thông báo chung; stack nằm trong log server |
+
+**Quyết định và lý do:**
+- **`parseId` chỉ nhận `^[1-9]\d*$` và ≤ 2147483647:** `Number()` một mình chấp nhận `"2.5"`, `"2e1"`, `" 2"`; số vượt giới hạn cột `Int` sẽ làm Prisma báo lỗi → thành `500` thay vì `404`. Hàm đặt ở `validators/` để route admin dùng lại.
+- **`q` chỉ nhận khi là chuỗi:** `?q=a&q=b` cho ra mảng; truyền mảng vào `contains` sẽ lỗi `500`.
+- **`GET /` redirect sang `/dishes`:** đề không có trang chủ; trang 404/500 cần chỗ để quay về. Đây là redirect hiển thị (GET → GET), không phải thao tác ghi.
+- **CSS viết thẳng trong `partials/header.ejs`:** chỉ vài dòng, chưa cần file tĩnh và `express.static`.
+
+**Điều chưa chắc:**
+- Header chưa có link "Quản trị" vì `/admin` chưa tồn tại; thêm ở bước 3.

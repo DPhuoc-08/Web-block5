@@ -1,0 +1,27 @@
+<%- include("../partials/header", { title: "Thực đơn" }) %>
+
+<h1>Thực đơn</h1>
+
+<%# Form GET: từ khoá đi lên URL (/dishes?q=...), nên kết quả tìm kiếm bookmark/chia sẻ được. %>
+<form class="search" method="GET" action="/dishes">
+  <input name="q" value="<%= q %>" placeholder="Tìm theo tên món">
+  <button>Tìm</button>
+  <% if (q) { %><a href="/dishes">Bỏ lọc</a><% } %>
+</form>
+
+<% if (dishes.length === 0) { %>
+  <p class="muted"><%= q ? `Không có món nào khớp "${q}".` : "Chưa có món nào." %></p>
+<% } else { %>
+  <ul class="list">
+    <%# Link chỉ mang id (path param); trang chi tiết tự đọc lại món từ database. %>
+    <% dishes.forEach(d => { %>
+      <li>
+        <a href="/dishes/<%= d.id %>"><%= d.name %></a>
+        — <%= d.price.toLocaleString("vi-VN") %>đ
+        <% if (!d.available) { %><span class="badge off">Tạm hết</span><% } %>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<%- include("../partials/footer") %>
