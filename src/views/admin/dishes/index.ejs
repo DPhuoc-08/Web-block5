@@ -3,33 +3,35 @@
 
 <div class="toolbar">
   <h1>Món ăn</h1>
-  <a href="/admin/dishes/new">+ Thêm món</a>
+  <a class="btn btn-primary" href="/admin/dishes/new">+ Thêm món</a>
 </div>
 
 <% if (dishes.length === 0) { %>
-  <p class="muted">Chưa có món nào.</p>
+  <div class="card empty">Chưa có món nào.</div>
 <% } else { %>
-  <table>
-    <thead>
-      <tr><th>#</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Tình trạng</th><th></th></tr>
-    </thead>
-    <tbody>
-      <% dishes.forEach(d => { %>
-        <tr>
-          <td><%= d.id %></td>
-          <td><a href="/dishes/<%= d.id %>"><%= d.name %></a></td>
-          <td><%= d.price.toLocaleString("vi-VN") %>đ</td>
-          <td><%= d.category ?? "—" %></td>
-          <td><%= d.available ? "Đang phục vụ" : "Tạm hết" %></td>
-          <%# Hai link GET chỉ mở trang (form sửa, trang xác nhận xoá); việc ghi diễn ra ở form trên các trang đó. %>
-          <td class="actions">
-            <a href="/admin/dishes/<%= d.id %>/edit">Sửa</a>
-            <a href="/admin/dishes/<%= d.id %>/delete">Xoá</a>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+  <div class="card table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Tình trạng</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% dishes.forEach(d => { %>
+          <tr>
+            <td class="num"><%= d.id %></td>
+            <td><a href="/dishes/<%= d.id %>"><%= d.name %></a></td>
+            <td><%= d.price.toLocaleString("vi-VN") %>đ</td>
+            <td><%= d.category ?? "—" %></td>
+            <td><span class="badge <%= d.available ? "on" : "off" %>"><%= d.available ? "Đang phục vụ" : "Tạm hết" %></span></td>
+            <%# Hai link GET chỉ mở trang (form sửa, trang xác nhận xoá); việc ghi diễn ra ở form trên các trang đó. %>
+            <td class="actions">
+              <a class="btn btn-sm" href="/admin/dishes/<%= d.id %>/edit">Sửa</a>
+              <a class="btn btn-sm danger-text" href="/admin/dishes/<%= d.id %>/delete">Xoá</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
 <% } %>
 
 <%- include("../../partials/footer") %>

@@ -11,6 +11,9 @@ const app = express();
 app.set("view engine", "ejs");
 app.set("views", fileURLToPath(new URL("./views", import.meta.url)));
 
+// File tĩnh (CSS) trong public/, vd. /css/style.css. Chỉ phục vụ file, không có route ghi dữ liệu.
+app.use(express.static(fileURLToPath(new URL("../public", import.meta.url))));
+
 // Parse body của form HTML (application/x-www-form-urlencoded) thành req.body.
 app.use(express.urlencoded({ extended: false }));
 

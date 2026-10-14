@@ -1,12 +1,15 @@
 <%- include("../../partials/header", { title: "Xoá đầu bếp" }) %>
 
-<p><a href="/admin/chefs">← Danh sách đầu bếp</a></p>
-<h1>Xoá đầu bếp “<%= chef.name %>”?</h1>
-<p>Thao tác này không khôi phục được.</p>
+<a class="back" href="/admin/chefs">← Danh sách đầu bếp</a>
 
-<form method="POST">
-  <button class="danger" formaction="/admin/chefs/<%= chef.id %>?_method=DELETE">Xoá</button>
-  <a href="/admin/chefs">Huỷ</a>
-</form>
+<div class="card confirm">
+  <h1>Xoá đầu bếp “<%= chef.name %>”?</h1>
+  <p class="muted">Thao tác này không khôi phục được.</p>
+
+  <form class="form-actions" method="POST">
+    <button class="btn btn-danger" formaction="/admin/chefs/<%= chef.id %>?_method=DELETE">Xoá</button>
+    <a class="btn" href="/admin/chefs">Huỷ</a>
+  </form>
+</div>
 
 <%- include("../../partials/footer") %>

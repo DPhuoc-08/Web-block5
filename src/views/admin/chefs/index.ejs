@@ -3,30 +3,32 @@
 
 <div class="toolbar">
   <h1>Đầu bếp</h1>
-  <a href="/admin/chefs/new">+ Thêm đầu bếp</a>
+  <a class="btn btn-primary" href="/admin/chefs/new">+ Thêm đầu bếp</a>
 </div>
 
 <% if (chefs.length === 0) { %>
-  <p class="muted">Chưa có đầu bếp nào.</p>
+  <div class="card empty">Chưa có đầu bếp nào.</div>
 <% } else { %>
-  <table>
-    <thead>
-      <tr><th>#</th><th>Tên</th><th>Chuyên môn</th><th></th></tr>
-    </thead>
-    <tbody>
-      <% chefs.forEach(c => { %>
-        <tr>
-          <td><%= c.id %></td>
-          <td><%= c.name %></td>
-          <td><%= c.specialty ?? "—" %></td>
-          <td class="actions">
-            <a href="/admin/chefs/<%= c.id %>/edit">Sửa</a>
-            <a href="/admin/chefs/<%= c.id %>/delete">Xoá</a>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+  <div class="card table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Tên</th><th>Chuyên môn</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% chefs.forEach(c => { %>
+          <tr>
+            <td class="num"><%= c.id %></td>
+            <td><%= c.name %></td>
+            <td><%= c.specialty ?? "—" %></td>
+            <td class="actions">
+              <a class="btn btn-sm" href="/admin/chefs/<%= c.id %>/edit">Sửa</a>
+              <a class="btn btn-sm danger-text" href="/admin/chefs/<%= c.id %>/delete">Xoá</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
 <% } %>
 
 <%- include("../../partials/footer") %>

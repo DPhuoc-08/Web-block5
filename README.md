@@ -95,6 +95,7 @@ block5/
 │   │   └── admin/           # dishes.js, chefs.js, ingredients.js
 │   ├── validators/          # parseId, validate từng model
 │   └── views/               # EJS: dishes/, admin/, partials/, 404, 500
+├── public/css/style.css     # giao diện; màu và khoảng cách đặt ở biến :root đầu file
 ├── .env.example
 └── BUILD_LOG.md             # nhật ký từng bước: quyết định, lý do, kiểm tra
 ```

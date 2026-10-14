@@ -1,29 +1,32 @@
 <% const isEdit = id !== null; -%>
 <%- include("../../partials/header", { title: isEdit ? "Sửa nguyên liệu" : "Thêm nguyên liệu" }) %>
 
-<p><a href="/admin/ingredients">← Danh sách nguyên liệu</a></p>
-<h1><%= isEdit ? "Sửa nguyên liệu" : "Thêm nguyên liệu" %></h1>
+<a class="back" href="/admin/ingredients">← Danh sách nguyên liệu</a>
 
-<% if (Object.keys(errors).length) { %>
-  <p class="alert">Dữ liệu chưa hợp lệ, vui lòng sửa các trường bên dưới.</p>
-<% } %>
+<div class="card form-card">
+  <h1><%= isEdit ? "Sửa nguyên liệu" : "Thêm nguyên liệu" %></h1>
 
-<form class="stack" method="POST" action="<%= isEdit ? `/admin/ingredients/${id}?_method=PATCH` : "/admin/ingredients" %>">
-  <label>
-    Tên nguyên liệu
-    <input name="name" value="<%= values.name %>">
-    <% if (errors.name) { %><span class="error"><%= errors.name %></span><% } %>
-  </label>
+  <% if (Object.keys(errors).length) { %>
+    <p class="alert">Dữ liệu chưa hợp lệ, vui lòng sửa các trường bên dưới.</p>
+  <% } %>
 
-  <label>
-    Đơn vị
-    <input name="unit" value="<%= values.unit %>" placeholder="kg, bó, con...">
-  </label>
+  <form class="form" method="POST" action="<%= isEdit ? `/admin/ingredients/${id}?_method=PATCH` : "/admin/ingredients" %>">
+    <label class="field <%= errors.name ? "invalid" : "" %>">
+      <span>Tên nguyên liệu</span>
+      <input name="name" value="<%= values.name %>">
+      <% if (errors.name) { %><span class="error"><%= errors.name %></span><% } %>
+    </label>
 
-  <div>
-    <button><%= isEdit ? "Lưu" : "Thêm" %></button>
-    <a href="/admin/ingredients">Huỷ</a>
-  </div>
-</form>
+    <label class="field">
+      <span>Đơn vị</span>
+      <input name="unit" value="<%= values.unit %>" placeholder="kg, bó, con...">
+    </label>
+
+    <div class="form-actions">
+      <button class="btn btn-primary"><%= isEdit ? "Lưu" : "Thêm" %></button>
+      <a class="btn" href="/admin/ingredients">Huỷ</a>
+    </div>
+  </form>
+</div>
 
 <%- include("../../partials/footer") %>

@@ -4,24 +4,27 @@
 
 <%# Form GET: từ khoá đi lên URL (/dishes?q=...), nên kết quả tìm kiếm bookmark/chia sẻ được. %>
 <form class="search" method="GET" action="/dishes">
-  <input name="q" value="<%= q %>" placeholder="Tìm theo tên món">
-  <button>Tìm</button>
-  <% if (q) { %><a href="/dishes">Bỏ lọc</a><% } %>
+  <input name="q" value="<%= q %>" placeholder="Tìm theo tên món, vd. phở">
+  <button class="btn btn-primary">Tìm</button>
+  <% if (q) { %><a class="btn" href="/dishes">Bỏ lọc</a><% } %>
 </form>
 
 <% if (dishes.length === 0) { %>
-  <p class="muted"><%= q ? `Không có món nào khớp "${q}".` : "Chưa có món nào." %></p>
+  <div class="card empty"><%= q ? `Không có món nào khớp "${q}".` : "Chưa có món nào." %></div>
 <% } else { %>
-  <ul class="list">
-    <%# Link chỉ mang id (path param); trang chi tiết tự đọc lại món từ database. %>
+  <div class="menu-grid">
+    <%# Mỗi thẻ là link chỉ mang id (path param); trang chi tiết tự đọc lại món từ database. %>
     <% dishes.forEach(d => { %>
-      <li>
-        <a href="/dishes/<%= d.id %>"><%= d.name %></a>
-        — <%= d.price.toLocaleString("vi-VN") %>đ
-        <% if (!d.available) { %><span class="badge off">Tạm hết</span><% } %>
-      </li>
+      <a class="card dish-card <%= d.available ? "" : "unavailable" %>" href="/dishes/<%= d.id %>">
+        <span class="name"><%= d.name %></span>
+        <span class="meta">
+          <% if (d.category) { %><span class="chip"><%= d.category %></span><% } %>
+          <% if (!d.available) { %><span class="badge off">Tạm hết</span><% } %>
+        </span>
+        <span class="price"><%= d.price.toLocaleString("vi-VN") %>đ</span>
+      </a>
     <% }) %>
-  </ul>
+  </div>
 <% } %>
 
 <%- include("../partials/footer") %>

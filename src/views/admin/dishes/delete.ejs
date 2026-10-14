@@ -1,13 +1,16 @@
 <%- include("../../partials/header", { title: "Xoá món" }) %>
 
-<p><a href="/admin/dishes">← Danh sách món</a></p>
-<h1>Xoá món “<%= dish.name %>”?</h1>
-<p>Món sẽ bị xoá khỏi thực đơn và không khôi phục được.</p>
+<a class="back" href="/admin/dishes">← Danh sách món</a>
 
-<%# Xoá chỉ xảy ra khi bấm nút này: POST kèm ?_method=DELETE (method-override đổi thành DELETE). %>
-<form method="POST">
-  <button class="danger" formaction="/admin/dishes/<%= dish.id %>?_method=DELETE">Xoá</button>
-  <a href="/admin/dishes">Huỷ</a>
-</form>
+<div class="card confirm">
+  <h1>Xoá món “<%= dish.name %>”?</h1>
+  <p class="muted">Món sẽ bị xoá khỏi thực đơn và không khôi phục được.</p>
+
+  <%# Xoá chỉ xảy ra khi bấm nút này: POST kèm ?_method=DELETE (method-override đổi thành DELETE). %>
+  <form class="form-actions" method="POST">
+    <button class="btn btn-danger" formaction="/admin/dishes/<%= dish.id %>?_method=DELETE">Xoá</button>
+    <a class="btn" href="/admin/dishes">Huỷ</a>
+  </form>
+</div>
 
 <%- include("../../partials/footer") %>
