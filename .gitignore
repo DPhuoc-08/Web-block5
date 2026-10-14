@@ -1,0 +1,5 @@
+node_modules/
+.env
+# Prisma Client sinh ra từ schema, tạo lại bằng `npx prisma generate`
+generated/
+.DS_Store
