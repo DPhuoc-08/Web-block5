@@ -41,3 +41,26 @@
 
 **Giả định:**
 - Cần Node có hỗ trợ chạy `.ts` trực tiếp (máy hiện tại: Node 25.2.1). Node quá cũ sẽ không import được `generated/prisma/client.ts`.
+
+## Bước 1c — Kết nối Supabase, db push, seed
+**Đã làm:** `npx prisma db push` tạo 3 bảng `dishes`, `chefs`, `ingredients` trên Supabase. Viết `prisma/seed.js` (6 món, 3 đầu bếp, 5 nguyên liệu), chạy `npx prisma db seed`. Kiểm tra bằng truy vấn đọc: tìm `"PHỞ"` (không phân biệt hoa thường) ra "Phở bò tái". Chạy seed lần 2 vẫn đúng 6/3/5 bản ghi.
+
+**Sự cố khi kết nối và cách xử lý:**
+| Lỗi | Nguyên nhân | Sửa |
+| :--- | :--- | :--- |
+| `P1001` tới `db.<ref>.supabase.co` | Dùng nhầm Direct connection (chỉ IPv6) | Đổi sang Session pooler |
+| `P1001` tới `...pooler.supabase.com:6543` | Transaction pooler (`6543`, `?pgbouncer=true`) và mật khẩu còn là `[YOUR-PASSWORD]` | Cổng `5432`, bỏ `?pgbouncer=true`, điền mật khẩu thật |
+| `28P01 password authentication failed` | Sai mật khẩu database | Reset mật khẩu database trên Supabase |
+| Kết nối không SSL bị treo; SSL mặc định báo `SELF_SIGNED_CERT_IN_CHAIN` | Pooler bắt buộc SSL, chứng chỉ do Supabase tự cấp | Nạp CA của Supabase (xem dưới) |
+
+**Quyết định và lý do:**
+- **SSL có xác minh bằng CA của Supabase** (`certs/supabase-ca.crt`, "Supabase Root 2021 CA", hạn 2031), truyền `ssl: { ca }` vào `PrismaPg`. Kết nối vừa mã hoá vừa xác minh đúng server. File CA là công khai → commit được.
+- Prisma CLI (`db push`, `db seed`) tự dùng SSL nên không cần cấu hình thêm trong `prisma.config.js`.
+- **Seed xoá dữ liệu cũ trước khi tạo** → chạy lại nhiều lần không bị trùng.
+
+**Phương án đã bỏ:**
+- `ssl: { rejectUnauthorized: false }`: chạy ngay nhưng không xác minh server (có thể bị giả mạo nếu mạng bị can thiệp). Người dùng chọn dùng CA.
+
+**Điều chưa chắc / cần biết:**
+- Chạy lại seed thì id không quay về 1 (Postgres không dùng lại giá trị autoincrement). Không ảnh hưởng vì link luôn lấy id từ database.
+- Nếu Supabase đổi chứng chỉ gốc (sau 2031 hoặc sớm hơn), cần tải lại file CA.
