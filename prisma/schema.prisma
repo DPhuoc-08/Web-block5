@@ -19,6 +19,9 @@ model Dish {
   price       Int
   category    String?
   available   Boolean  @default(true)
+  // Ảnh minh hoạ lấy từ nguồn online (link trực tiếp tới file ảnh), kèm ghi công tác giả/giấy phép.
+  imageUrl    String?
+  imageCredit String?
   createdAt   DateTime @default(now())
 
   @@map("dishes")

@@ -191,3 +191,28 @@
 **Phương án đã bỏ:** `ALTER SEQUENCE ... RESTART WITH 1` sau `deleteMany()`: phải biết tên sequence của từng bảng và vẫn cần SQL thô, dài hơn mà không lợi gì.
 
 **Lưu ý:** seed xoá toàn bộ dữ liệu hiện có (kể cả món thêm qua trang admin) — chỉ chạy khi muốn đưa database về dữ liệu mẫu.
+
+## Mở rộng (theo yêu cầu sau nghiệm thu): ảnh món, lọc món, tìm kiếm admin, áp dụng mockup
+
+### A — Ảnh minh hoạ cho món ăn
+**Đã làm:** thêm `imageUrl String?`, `imageCredit String?` vào model `Dish`; `npx prisma db push` (chỉ thêm cột, không mất dữ liệu), `prisma generate`; seed gắn ảnh cho cả 6 món.
+
+**Nguồn ảnh (ảnh thật, giấy phép mở, nhúng trực tiếp bằng link — không tự vẽ, không tải về repo):**
+| Món | Tác giả · Giấy phép · Nguồn |
+| :--- | :--- |
+| Phở bò tái | Kritzolina · CC BY-SA 4.0 · [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ph%E1%BB%9F_b%C3%B2_in_a_German_restaurant_01.jpg) |
+| Bún chả Hà Nội | stuart_spivack · CC BY 2.0 · [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:B%C3%BAn_ch%E1%BA%A3_Vietnamese_food.jpg) |
+| Cơm tấm sườn bì | Phương Huy · CC0 · [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:C%C6%A1m_t%E1%BA%A5m_SG_l%E1%BB%81_%C4%91%C6%B0%E1%BB%9Dng_(c%C6%A1m_s%C6%B0%E1%BB%9Dn,_mi%E1%BA%BFng_s%C6%B0%E1%BB%9Dn_n%C6%B0%E1%BB%9Bng_m%E1%BA%ADt_ong)_ng30th7n2022_(1).jpg) |
+| Gỏi cuốn tôm thịt | Tran Hai Duong · CC0 · [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:G%E1%BB%8Fi_cu%E1%BB%91n.jpg) |
+| Chè ba màu | avlxyz · CC BY-NC 2.0 · [Flickr](https://www.flickr.com/photos/10559879@N00/51714302932) |
+| Bánh xèo miền Tây | Vivian D Nguyen · CC BY-SA 2.0 · [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:B%C3%A1nh_x%C3%A8o_with_n%C6%B0%E1%BB%9Bc_m%E1%BA%AFm.jpg) |
+
+**Quyết định và lý do:**
+- **Wikimedia Commons trước:** ảnh có giấy phép rõ ràng, cho phép nhúng trực tiếp; API trả về tác giả + giấy phép. Dùng bản thumbnail 960px thay vì ảnh gốc (vài MB).
+- **Chè ba màu lấy từ Flickr (qua Openverse):** Commons không có ảnh đúng món (chỉ có chè thập cẩm, quầy hàng). CC BY-NC phù hợp vì đây là đồ án học tập, không thương mại.
+- **Lưu `imageCredit`** và hiển thị cạnh ảnh: CC BY / BY-SA yêu cầu ghi công tác giả và giấy phép.
+- **Chọn ảnh bằng mắt:** ghép 12 ảnh ứng viên vào một trang, chụp màn hình để chọn ảnh đúng món, đúng mô tả (vd. cơm tấm có miếng sườn nướng mật ong).
+
+**Phương án đã bỏ:** tự vẽ/sinh ảnh (người dùng yêu cầu ảnh thật); tải ảnh về `public/` (tăng dung lượng repo, phải tự quản lý bản quyền file).
+
+**Điều chưa chắc:** ảnh phụ thuộc máy chủ bên ngoài — nếu link chết, view hiện khung "Chưa có ảnh" (bước giao diện). Flickr trả lỗi 500 cho request có User-Agent quá đơn giản (curl); trình duyệt tải bình thường.
