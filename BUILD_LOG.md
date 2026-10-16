@@ -175,3 +175,6 @@
 - **Bảng admin `white-space: nowrap` + cuộn ngang trong khung** ở màn hình hẹp: trước đó chữ bị bóp xuống từng từ và cột Sửa/Xoá bị đẩy ra ngoài.
 
 **Đã kiểm tra:** `/css/style.css` trả `200 text/css`; tất cả trang `200`/`404` như trước; chạy lại test CRUD chefs 25/25, ingredients 25/25, món ăn thêm/sửa/xoá đúng; không có `<script>` trong views. Chụp màn hình bằng Chrome headless ở 1100px và trong iframe 375px (Chrome headless không thu cửa sổ dưới 500px, nên ảnh "390px" ban đầu bị cắt mép, không phải lỗi CSS). Sửa sau khi xem ảnh: link header dính nhau, bảng admin trên mobile, dòng lỗi bị in đậm.
+
+## Tài liệu trình bày
+**Đã làm:** `hotrotrinhbay.html` (cùng khung với block4): mục tiêu + tiêu chí nghiệm thu, luồng đọc/ghi (PRG) và xử lý lỗi, cây thư mục rút gọn, bảng công nghệ kèm lý do, mục "cố ý không dùng". Không so sánh với block trước (theo yêu cầu). HTML tĩnh, mở trực tiếp bằng trình duyệt; đã chụp màn hình kiểm tra hiển thị.
