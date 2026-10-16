@@ -62,7 +62,7 @@
 - `ssl: { rejectUnauthorized: false }`: chạy ngay nhưng không xác minh server (có thể bị giả mạo nếu mạng bị can thiệp). Người dùng chọn dùng CA.
 
 **Điều chưa chắc / cần biết:**
-- Chạy lại seed thì id không quay về 1 (Postgres không dùng lại giá trị autoincrement). Không ảnh hưởng vì link luôn lấy id từ database.
+- ~~Chạy lại seed thì id không quay về 1~~ → đã sửa, xem mục "Seed: id bắt đầu từ 1".
 - Nếu Supabase đổi chứng chỉ gốc (sau 2031 hoặc sớm hơn), cần tải lại file CA.
 
 ## Bước 2 — Trang người dùng
@@ -148,7 +148,7 @@
 | Sửa/xoá qua `PATCH`/`DELETE` bằng method-override | ✅ | `methodOverride("_method")` đặt trước router; form `?_method=PATCH`, `?_method=DELETE` |
 | Ghi thành công redirect `303` | ✅ | 9/9 `res.redirect` trong `routes/admin` đều `303` |
 | Template không có `fetch`/AJAX | ✅ | Không có `fetch(`, `XMLHttpRequest`, `<script>` trong `src/views` |
-| Không nối chuỗi input vào SQL | ✅ | Chỉ dùng hàm Prisma; không có `$queryRaw`/`$executeRaw` |
+| Không nối chuỗi input vào SQL | ✅ | Route chỉ dùng hàm Prisma; SQL thô duy nhất là câu `TRUNCATE` cố định trong `prisma/seed.js` (không nhận input) |
 | `req.body` được lọc, validate trước `create`/`update` | ✅ | Luôn qua `validateX(req.body).data`; test trường lạ `id`, `createdAt` bị bỏ |
 | Chuỗi kết nối không có trong mã nguồn, log, template | ✅ | `git grep` toàn bộ lịch sử: không có; `.env` chưa từng commit; log lỗi `500` không chứa chuỗi kết nối; không render `process.env`/`prisma` |
 
@@ -178,3 +178,16 @@
 
 ## Tài liệu trình bày
 **Đã làm:** `hotrotrinhbay.html` (cùng khung với block4): mục tiêu + tiêu chí nghiệm thu, luồng đọc/ghi (PRG) và xử lý lỗi, cây thư mục rút gọn, bảng công nghệ kèm lý do, mục "cố ý không dùng". Không so sánh với block trước (theo yêu cầu). HTML tĩnh, mở trực tiếp bằng trình duyệt; đã chụp màn hình kiểm tra hiển thị.
+
+## Seed: id bắt đầu từ 1
+**Vấn đề:** `deleteMany()` chỉ xoá dòng, không reset bộ đếm autoincrement của PostgreSQL → sau nhiều lần seed, món đầu tiên có id 7, 13...
+
+**Đã làm:** trong `prisma/seed.js`, thay 3 lệnh `deleteMany()` bằng `prisma.$executeRaw\`TRUNCATE TABLE "dishes", "chefs", "ingredients" RESTART IDENTITY\``. Seed 2 lần liên tiếp: dishes 1–6, chefs 1–3, ingredients 1–5; món thêm mới tiếp theo nhận id 7.
+
+**Quyết định và lý do:**
+- Prisma không có hàm reset bộ đếm id → dùng một câu SQL **cố định** qua tagged template `$executeRaw`. Không nhận dữ liệu người dùng nên không có rủi ro SQL injection; chỉ nằm trong script seed, không nằm trong route.
+- `TRUNCATE` cả 3 bảng trong một câu: nhanh hơn xoá từng dòng và reset luôn bộ đếm.
+
+**Phương án đã bỏ:** `ALTER SEQUENCE ... RESTART WITH 1` sau `deleteMany()`: phải biết tên sequence của từng bảng và vẫn cần SQL thô, dài hơn mà không lợi gì.
+
+**Lưu ý:** seed xoá toàn bộ dữ liệu hiện có (kể cả món thêm qua trang admin) — chỉ chạy khi muốn đưa database về dữ liệu mẫu.

@@ -2,10 +2,10 @@
 import { prisma } from "../src/db.js";
 
 async function main() {
-  // Xoá dữ liệu cũ trước để chạy lại nhiều lần vẫn ra đúng một bộ dữ liệu, không bị nhân đôi.
-  await prisma.dish.deleteMany();
-  await prisma.chef.deleteMany();
-  await prisma.ingredient.deleteMany();
+  // Xoá dữ liệu cũ VÀ đặt lại bộ đếm id về 1, để mỗi lần seed đều ra cùng một bộ dữ liệu với id 1, 2, 3...
+  // deleteMany() chỉ xoá dòng, không reset bộ đếm autoincrement (id sẽ tiếp tục 7, 8...), và Prisma
+  // không có hàm reset nên dùng câu SQL cố định này. Không có dữ liệu người dùng → không có rủi ro SQL injection.
+  await prisma.$executeRaw`TRUNCATE TABLE "dishes", "chefs", "ingredients" RESTART IDENTITY`;
 
   await prisma.dish.createMany({
     data: [

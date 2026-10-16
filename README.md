@@ -45,7 +45,7 @@ Nếu project Supabase của bạn dùng chứng chỉ khác, tải lại tại 
 ### 4. Tạo bảng và dữ liệu mẫu
 ```bash
 npx prisma db push   # tạo bảng dishes, chefs, ingredients từ prisma/schema.prisma
-npx prisma db seed   # nạp 6 món, 3 đầu bếp, 5 nguyên liệu (chạy lại không bị trùng)
+npx prisma db seed   # nạp 6 món, 3 đầu bếp, 5 nguyên liệu; mỗi lần chạy xoá dữ liệu cũ, id bắt đầu lại từ 1
 ```
 
 ### 5. Chạy server
