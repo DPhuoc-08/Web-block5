@@ -21,3 +21,6 @@
     </div>
   </header>
   <main class="container">
+<% if (locals.flash) { %>
+    <p class="flash" role="status"><%= flash %></p>
+<% } %>

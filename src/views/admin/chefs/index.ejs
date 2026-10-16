@@ -14,7 +14,7 @@
   <div class="panel table-wrap">
     <table>
       <thead>
-        <tr><th>#</th><th>Tên</th><th>Chuyên môn</th><th><span class="sr-only">Thao tác</span></th></tr>
+        <tr><th>#</th><th>Tên</th><th>Chuyên môn</th><th>Phụ trách</th><th><span class="sr-only">Thao tác</span></th></tr>
       </thead>
       <tbody>
         <% chefs.forEach(c => { %>
@@ -22,6 +22,7 @@
             <td class="num" data-label="Mã"><%= c.id %></td>
             <td class="title" data-label="Tên"><%= c.name %></td>
             <td data-label="Chuyên môn"><%= c.specialty ?? "—" %></td>
+            <td data-label="Phụ trách"><%= c._count.dishes %> món</td>
             <td class="actions">
               <a class="btn btn-sm" href="/admin/chefs/<%= c.id %>/edit">Sửa</a>
               <a class="btn btn-sm danger-text" href="/admin/chefs/<%= c.id %>/delete">Xoá</a>

@@ -266,3 +266,45 @@
 **Đã kiểm tra:** chụp màn hình trước/sau ở 360px (thực đơn, admin món, admin đầu bếp, form sửa, chi tiết) và 768px (thực đơn, admin món); CRUD chefs 25/25, ingredients 25/25; các trang chính `200`, id sai `404`.
 
 **Phương án đã bỏ:** gói bộ lọc vào `<details>` trên điện thoại — `<details>` không mở sẵn được riêng cho màn hình lớn nếu không có JavaScript; thay bằng bố cục lọc gọn (chip cuộn ngang + lưới 2 cột).
+
+### R2 — Quan hệ khoá ngoại + dữ liệu giả
+**Đã làm:** `schema.prisma`: `Dish.chefId → Chef` (onDelete **Restrict**), bảng trung gian `DishIngredient` (`dish_ingredients`, khoá chính `[dishId, ingredientId]`; `dishId` **Cascade**, `ingredientId` **Restrict**); `@unique` cho tên đầu bếp và tên nguyên liệu. Seed mới: 20 món / 7 loại, 7 đầu bếp, 30 nguyên liệu, 71 liên kết; ảnh thật cho 19 món (thêm 13 ảnh Wikimedia Commons, chọn bằng bảng ảnh ứng viên).
+
+**Quyết định và lý do:**
+- **Mỗi món 1 đầu bếp (1-n)** — người dùng chọn: "đầu bếp đảm trách".
+- **Bảng trung gian tường minh** thay vì many-to-many ngầm định của Prisma: bảng ngầm định luôn Cascade cả hai phía nên không chặn được việc xoá nguyên liệu đang dùng.
+- **Restrict ở database + kiểm tra ở app:** app hiện thông báo dễ hiểu; database là lớp chặn cuối khi có request đồng thời.
+- **Dữ liệu giả có chủ đích:** 1 đầu bếp 0 món (xoá được), 1 nguyên liệu chưa dùng (xoá được), nguyên liệu dùng chung nhiều món (Rau thơm, Tôm sú: 6 món), 2 món tạm hết, 1 món chưa có ảnh (Cơm gà Hội An: Commons không có ảnh đúng món), 1 món chưa có mô tả.
+- **Reset database:** thêm cột bắt buộc `chefId` vào bảng có dữ liệu không được, nên dùng `npx prisma db push --force-reset`. Prisma 7 chặn lệnh này khi do AI gọi; đã giải thích hậu quả (xoá vĩnh viễn, chỉ dùng cho DB phát triển) và người dùng đồng ý rõ ràng trước khi chạy.
+
+**Đã kiểm tra ở tầng DB:** xoá nguyên liệu đang dùng → `P2003`; xoá đầu bếp còn món → `P2003`; tạo nguyên liệu trùng tên → `P2002`; xoá món → liên kết của món bị xoá, nguyên liệu + đầu bếp còn nguyên.
+
+**Phương án đã bỏ:** đầu bếp nhiều-nhiều (khó xác định "ai đảm trách"); `onDelete: SetNull` cho đầu bếp (món sẽ không có người phụ trách, trái quy tắc bắt buộc).
+
+### R3 — Form món: chọn đầu bếp, tick nguyên liệu, loại cố định
+**Đã làm:** `validateDish(body, { chefIds, ingredientIds })` nhận tập id hợp lệ lấy từ DB; route nạp danh sách đầu bếp + nguyên liệu mỗi lần mở form; form có select loại (`CATEGORIES`), radio đầu bếp, checkbox nguyên liệu (`name="ingredientIds"` lặp → mảng). Tạo món dùng nested create; sửa món thay toàn bộ liên kết (`deleteMany` + `create`) trong cùng một lệnh update.
+
+**Quyết định và lý do:**
+- **(P1) Kiểm tra id có thật trong DB:** form có thể bị sửa tay gửi id bịa → `400` thay vì lỗi Prisma `500`.
+- **(P2) Giữ lựa chọn khi `400`:** radio đã chọn, các ô đã tick, loại đã chọn được render lại.
+- **(P4) Loại món là danh sách cố định trong code**, không tạo bảng: đủ cho yêu cầu, tránh "món nước"/"Món nước" thành 2 chip lọc.
+- **Tick trùng một nguyên liệu** (form bị sửa) → gộp lại, không lỗi khoá chính.
+- **Đầu bếp/nguyên liệu vừa bị xoá ở tab khác** lúc đang lưu món → khoá ngoại từ chối (`P2003`) → `400` "vui lòng chọn lại".
+
+**Đã kiểm tra:** thiếu loại/đầu bếp/nguyên liệu → `400` đủ 3 lỗi; giữ lựa chọn khi giá sai; `chefId=9999`, `ingredientIds=abc|9999`, loại ngoài danh sách → `400`; thêm hợp lệ → `303` + DB đúng đầu bếp, nguyên liệu; sửa đổi đầu bếp + nguyên liệu → DB đúng; xoá món → liên kết bị xoá.
+
+### R4 — Quy tắc xoá, hiển thị quan hệ, thông báo sau khi lưu
+**Đã làm:**
+- **Xoá nguyên liệu:** trang xác nhận liệt kê món đang dùng (link "Sửa món"), không có nút Xoá; `DELETE` khi còn dùng → **`409`**; bắt thêm `P2003` (lớp database) → `409`.
+- **Xoá đầu bếp:** 0 món → xoá thẳng; còn món → trang xác nhận liệt kê món (link "Đổi đầu bếp riêng món này") + select người nhận; `DELETE` không chọn → **`409`**, người nhận sai (chính mình, `abc`, không tồn tại) → `400`; hợp lệ → `$transaction([updateMany chuyển món, delete])` → `303`.
+- **(P3) Chặn trùng tên** đầu bếp/nguyên liệu không phân biệt hoa thường (`nameTaken`, `mode: "insensitive"`) + bắt `P2002` → `400`.
+- **(P5)** Trang chi tiết món hiện đầu bếp phụ trách + nguyên liệu. **(P6)** Cột "Phụ trách N món" / "Dùng trong N món" ở admin. Bảng admin món thêm cột đầu bếp.
+- **(P7)** Thông báo sau khi lưu: redirect `303` kèm `?msg=<mã>`, middleware tra bảng `FLASH` cố định (không in nội dung từ URL ra trang).
+- **Sửa lỗi phát hiện khi test:** Express 5 để `req.body` là `undefined` khi POST không có body → đọc `req.body.x` ném lỗi `500`. Thêm middleware `req.body ??= {}` → mọi route nhận dữ liệu thiếu thành `400`/`409`.
+- **Sửa lỗi phát hiện khi chụp màn hình:** radio đầu bếp bị kéo rộng 100% (CSS chung của `input` chỉ chừa checkbox); nguyên liệu 1 cột quá dài trên điện thoại → 2 cột.
+
+**Quyết định và lý do:**
+- **Chuyển món + xoá trong một transaction:** không bao giờ có trạng thái đã chuyển món mà chưa xoá (hoặc ngược lại); `updateMany` chạy trong transaction nên cả món vừa được gán ở tab khác cũng được chuyển.
+- **`409 Conflict`** (người dùng chọn) cho xoá bị chặn: request hợp lệ nhưng xung đột với trạng thái dữ liệu hiện tại; `400` dành cho dữ liệu gửi lên sai.
+
+**Đã kiểm tra:** 9 request không body (POST/PATCH/DELETE) → `400`/`409`, không `500`; xoá "Thịt bò" (3 món) → `409`, còn trong DB; xoá "Nấm hương" → `303`; chuyển 3 món của đầu bếp 1 sang đầu bếp 2 → đầu bếp 2 có 7 món, tổng vẫn 20 món; xoá đầu bếp 0 món → `303`; trùng tên ("tỏi", "SƯỜN HEO", "võ thị mai") → `400`, lưu lại tên cũ của chính mình → `303`; CRUD chefs 25/25, ingredients 25/25; chụp màn hình form (1280/820/360px), trang xoá đầu bếp/nguyên liệu, chi tiết món, danh sách admin có thông báo. Seed lại sau test.

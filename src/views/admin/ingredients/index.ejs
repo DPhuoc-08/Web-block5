@@ -14,7 +14,7 @@
   <div class="panel table-wrap">
     <table>
       <thead>
-        <tr><th>#</th><th>Tên</th><th>Đơn vị</th><th><span class="sr-only">Thao tác</span></th></tr>
+        <tr><th>#</th><th>Tên</th><th>Đơn vị</th><th>Dùng trong</th><th><span class="sr-only">Thao tác</span></th></tr>
       </thead>
       <tbody>
         <% ingredients.forEach(i => { %>
@@ -22,6 +22,7 @@
             <td class="num" data-label="Mã"><%= i.id %></td>
             <td class="title" data-label="Tên"><%= i.name %></td>
             <td data-label="Đơn vị"><%= i.unit ?? "—" %></td>
+            <td data-label="Dùng trong"><%= i._count.dishes ? `${i._count.dishes} món` : "Chưa dùng" %></td>
             <td class="actions">
               <a class="btn btn-sm" href="/admin/ingredients/<%= i.id %>/edit">Sửa</a>
               <a class="btn btn-sm danger-text" href="/admin/ingredients/<%= i.id %>/delete">Xoá</a>

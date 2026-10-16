@@ -14,7 +14,7 @@
   <div class="panel table-wrap">
     <table>
       <thead>
-        <tr><th>#</th><th>Ảnh</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Tình trạng</th><th><span class="sr-only">Thao tác</span></th></tr>
+        <tr><th>#</th><th>Ảnh</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Đầu bếp</th><th>Tình trạng</th><th><span class="sr-only">Thao tác</span></th></tr>
       </thead>
       <tbody>
         <% dishes.forEach(d => { %>
@@ -25,6 +25,7 @@
             <td class="title" data-label="Tên"><a href="/dishes/<%= d.id %>"><%= d.name %></a></td>
             <td data-label="Giá"><%= d.price.toLocaleString("vi-VN") %>đ</td>
             <td data-label="Loại"><%= d.category ?? "—" %></td>
+            <td data-label="Đầu bếp"><%= d.chef.name %></td>
             <td data-label="Tình trạng"><span class="badge <%= d.available ? "on" : "off" %>"><%= d.available ? "Đang phục vụ" : "Tạm hết" %></span></td>
             <%# Hai link GET chỉ mở trang (form sửa, trang xác nhận xoá); việc ghi diễn ra ở form trên các trang đó. %>
             <td class="actions">

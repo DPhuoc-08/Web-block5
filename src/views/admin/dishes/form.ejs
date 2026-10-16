@@ -26,15 +26,55 @@
       <% if (errors.price) { %><span class="error"><%= errors.price %></span><% } %>
     </label>
 
-    <label class="field">
+    <label class="field <%= errors.category ? "invalid" : "" %>">
       <span>Loại</span>
-      <input name="category" value="<%= values.category %>" placeholder="Món nước, Món cơm...">
+      <select name="category">
+        <option value="">— Chọn loại món —</option>
+        <% categories.forEach(c => { %>
+          <option value="<%= c %>" <%= values.category === c ? "selected" : "" %>><%= c %></option>
+        <% }) %>
+      </select>
+      <% if (errors.category) { %><span class="error"><%= errors.category %></span><% } %>
     </label>
 
     <label class="field">
       <span>Mô tả</span>
       <textarea name="description" rows="3"><%= values.description %></textarea>
     </label>
+
+    <%# Đầu bếp phụ trách: chọn đúng 1 (radio). Giá trị gửi lên là id; server kiểm tra id có thật trong DB. %>
+    <fieldset class="choice-group <%= errors.chefId ? "invalid" : "" %>">
+      <legend>Đầu bếp phụ trách</legend>
+      <% if (errors.chefId) { %><p class="error"><%= errors.chefId %></p><% } %>
+      <% if (chefs.length === 0) { %>
+        <p class="muted">Chưa có đầu bếp nào. <a href="/admin/chefs/new">Thêm đầu bếp</a> trước khi tạo món.</p>
+      <% } %>
+      <div class="choice-grid">
+        <% chefs.forEach(c => { %>
+          <label class="choice">
+            <input type="radio" name="chefId" value="<%= c.id %>" <%= values.chefId === String(c.id) ? "checked" : "" %>>
+            <span><strong><%= c.name %></strong><% if (c.specialty) { %><small><%= c.specialty %></small><% } %></span>
+          </label>
+        <% }) %>
+      </div>
+    </fieldset>
+
+    <%# Nguyên liệu: tick nhiều ô, cùng name="ingredientIds" → server nhận mảng id (lưu vào bảng dish_ingredients). %>
+    <fieldset class="choice-group <%= errors.ingredientIds ? "invalid" : "" %>">
+      <legend>Nguyên liệu <small class="muted">(chọn ít nhất 1)</small></legend>
+      <% if (errors.ingredientIds) { %><p class="error"><%= errors.ingredientIds %></p><% } %>
+      <% if (ingredients.length === 0) { %>
+        <p class="muted">Chưa có nguyên liệu nào. <a href="/admin/ingredients/new">Thêm nguyên liệu</a> trước khi tạo món.</p>
+      <% } %>
+      <div class="choice-grid compact">
+        <% ingredients.forEach(i => { %>
+          <label class="choice">
+            <input type="checkbox" name="ingredientIds" value="<%= i.id %>" <%= values.ingredientIds.includes(i.id) ? "checked" : "" %>>
+            <span><%= i.name %><% if (i.unit) { %> <small><%= i.unit %></small><% } %></span>
+          </label>
+        <% }) %>
+      </div>
+    </fieldset>
 
     <label class="field <%= errors.imageUrl ? "invalid" : "" %>">
       <span>Link ảnh minh hoạ</span>

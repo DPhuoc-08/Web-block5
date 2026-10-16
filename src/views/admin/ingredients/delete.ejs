@@ -4,12 +4,26 @@
 
 <div class="panel confirm">
   <h1>Xoá nguyên liệu “<%= ingredient.name %>”?</h1>
-  <p class="muted">Thao tác này không khôi phục được.</p>
 
-  <form class="form-actions" method="POST">
-    <button class="btn btn-danger" formaction="/admin/ingredients/<%= ingredient.id %>?_method=DELETE">Xoá</button>
-    <a class="btn" href="/admin/ingredients">Huỷ</a>
-  </form>
+  <% if (error) { %><p class="alert" role="alert"><%= error %></p><% } %>
+
+  <% if (dishes.length === 0) { %>
+    <p class="muted">Không món nào dùng nguyên liệu này. Thao tác này không khôi phục được.</p>
+    <form class="form-actions" method="POST">
+      <button class="btn btn-danger" formaction="/admin/ingredients/<%= ingredient.id %>?_method=DELETE">Xoá</button>
+      <a class="btn" href="/admin/ingredients">Huỷ</a>
+    </form>
+  <% } else { %>
+    <%# Đang được dùng: không có nút Xoá. Database cũng chặn (khoá ngoại Restrict) nếu có request xoá gửi tới. %>
+    <p>Không thể xoá: nguyên liệu đang được dùng trong <strong><%= dishes.length %> món</strong>.
+      Bỏ nguyên liệu khỏi các món này (trong form sửa món) rồi quay lại xoá.</p>
+    <ul class="related-list">
+      <% dishes.forEach(d => { %>
+        <li><span><%= d.name %></span> <a href="/admin/dishes/<%= d.id %>/edit">Sửa món</a></li>
+      <% }) %>
+    </ul>
+    <a class="btn" href="/admin/ingredients">Quay lại</a>
+  <% } %>
 </div>
 
 <%- include("../../partials/footer", { section: "admin" }) %>

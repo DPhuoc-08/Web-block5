@@ -63,7 +63,14 @@ router.get("/dishes/:id", async (req, res) => {
   const id = parseId(req.params.id);
   if (id === null) return res.status(404).render("404");
 
-  const dish = await prisma.dish.findUnique({ where: { id } });
+  // Đọc kèm dữ liệu quan hệ: đầu bếp phụ trách (khoá ngoại chefId) và nguyên liệu (qua bảng dish_ingredients).
+  const dish = await prisma.dish.findUnique({
+    where: { id },
+    include: {
+      chef: { select: { name: true, specialty: true } },
+      ingredients: { include: { ingredient: { select: { name: true } } }, orderBy: { ingredient: { name: "asc" } } },
+    },
+  });
   if (!dish) return res.status(404).render("404");
 
   res.render("dishes/show", { dish });

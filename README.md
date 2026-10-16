@@ -2,8 +2,9 @@
 
 Ứng dụng Express render HTML phía server (EJS), đọc/ghi Supabase PostgreSQL qua Prisma ORM.
 
-- **Trang người dùng:** xem thực đơn có ảnh minh hoạ, tìm và lọc món (loại, khoảng giá, còn phục vụ, sắp xếp), xem chi tiết món.
-- **Trang quản trị (`/admin`):** tìm kiếm, thêm, sửa, xoá Món ăn, Đầu bếp, Nguyên liệu; gắn link ảnh cho món.
+- **Trang người dùng:** xem thực đơn có ảnh minh hoạ, tìm và lọc món (loại, khoảng giá, còn phục vụ, sắp xếp), xem chi tiết món (kèm đầu bếp phụ trách và nguyên liệu).
+- **Trang quản trị (`/admin`):** tìm kiếm, thêm, sửa, xoá Món ăn, Đầu bếp, Nguyên liệu; mỗi món chọn 1 đầu bếp phụ trách và tick các nguyên liệu (lấy từ database); gắn link ảnh cho món.
+- **Responsive:** điện thoại, máy tính bảng, máy tính (bảng quản trị chuyển thành thẻ ở ≤ 820px).
 
 Không dùng `fetch`/AJAX: mọi dữ liệu đi qua HTML form. Ghi dữ liệu bằng `POST` / `PATCH` / `DELETE` (qua `method-override`), ghi xong redirect `303` (Post/Redirect/Get).
 
@@ -44,8 +45,8 @@ Nếu project Supabase của bạn dùng chứng chỉ khác, tải lại tại 
 
 ### 4. Tạo bảng và dữ liệu mẫu
 ```bash
-npx prisma db push   # tạo bảng dishes, chefs, ingredients từ prisma/schema.prisma
-npx prisma db seed   # nạp 6 món, 3 đầu bếp, 5 nguyên liệu; mỗi lần chạy xoá dữ liệu cũ, id bắt đầu lại từ 1
+npx prisma db push   # tạo bảng dishes, chefs, ingredients, dish_ingredients từ prisma/schema.prisma
+npx prisma db seed   # nạp 20 món, 7 đầu bếp, 30 nguyên liệu; mỗi lần chạy xoá dữ liệu cũ, id bắt đầu lại từ 1
 ```
 
 ### 5. Chạy server
@@ -75,9 +76,24 @@ Cùng một bộ route cho `dishes`, `chefs`, `ingredients`:
 | GET | `/admin/<entity>/:id/edit` | Form sửa | `200` hoặc `404` |
 | PATCH | `/admin/<entity>/:id` | Cập nhật | `303`, `400` hoặc `404` |
 | GET | `/admin/<entity>/:id/delete` | Trang xác nhận xoá | `200` hoặc `404` |
-| DELETE | `/admin/<entity>/:id` | Xoá | `303` hoặc `404` |
+| DELETE | `/admin/<entity>/:id` | Xoá | `303`, `404`, hoặc `409` khi bị chặn (xem bên dưới) |
 
 Ghi thành công: món ăn → trang chi tiết `/dishes/:id` (thêm, sửa); đầu bếp, nguyên liệu → trang danh sách; xoá → trang danh sách.
+
+## Quan hệ dữ liệu và quy tắc xoá
+```
+chefs 1 ──< n dishes            dishes.chefId → chefs.id            (mỗi món đúng 1 đầu bếp phụ trách)
+dishes n >──< n ingredients     qua dish_ingredients(dishId, ingredientId)
+```
+| Xoá | Kết quả |
+| :--- | :--- |
+| **Món ăn** | Xoá món + các dòng `dish_ingredients` của món (Cascade). Đầu bếp, nguyên liệu không bị ảnh hưởng |
+| **Nguyên liệu đang được món nào dùng** | Bị chặn → `409`: trang xác nhận liệt kê các món đang dùng, không có nút Xoá. Database cũng chặn (khoá ngoại Restrict) |
+| **Nguyên liệu chưa dùng** | Xoá được |
+| **Đầu bếp còn phụ trách món** | Phải chọn đầu bếp nhận món: một request chuyển toàn bộ món + xoá đầu bếp trong cùng một transaction. Không chọn → `409`. Database chặn xoá thẳng (khoá ngoại Restrict) |
+| **Đầu bếp không phụ trách món nào** | Xoá được |
+
+Khi thêm/sửa món: bắt buộc chọn loại (danh sách cố định), 1 đầu bếp và ít nhất 1 nguyên liệu; id gửi lên phải có thật trong database (không thì `400`). Tên đầu bếp và tên nguyên liệu không được trùng (không phân biệt hoa thường).
 
 ## Ảnh món ăn
 Ảnh là **link trực tiếp** tới ảnh có giấy phép mở (Wikimedia Commons, Flickr), lưu ở cột `imageUrl`; tác giả + giấy phép ở cột `imageCredit`, hiển thị dưới ảnh trong trang chi tiết. Repo không chứa file ảnh. Danh sách nguồn từng ảnh: xem `BUILD_LOG.md`, mục "A — Ảnh minh hoạ".

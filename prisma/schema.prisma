@@ -12,6 +12,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// Quan hệ giữa các bảng:
+//   Chef 1 ──< n Dish            mỗi món có đúng 1 đầu bếp phụ trách (dishes.chefId là khoá ngoại)
+//   Dish n >──< n Ingredient     qua bảng trung gian dish_ingredients (2 khoá ngoại)
+
 model Dish {
   id          Int      @id @default(autoincrement())
   name        String
@@ -24,21 +28,47 @@ model Dish {
   imageCredit String?
   createdAt   DateTime @default(now())
 
+  // onDelete: Restrict → database từ chối xoá đầu bếp khi còn món do người đó phụ trách
+  // (app phải chuyển món sang đầu bếp khác trước, xem routes/admin/chefs.js).
+  chefId      Int
+  chef        Chef     @relation(fields: [chefId], references: [id], onDelete: Restrict)
+
+  ingredients DishIngredient[]
+
+  @@index([chefId])
   @@map("dishes")
 }
 
 model Chef {
   id        Int     @id @default(autoincrement())
-  name      String
+  // @unique là lớp chặn cuối ở database; app còn kiểm tra trùng không phân biệt hoa thường trước khi ghi.
+  name      String  @unique
   specialty String?
+  dishes    Dish[]
 
   @@map("chefs")
 }
 
 model Ingredient {
-  id   Int     @id @default(autoincrement())
-  name String
-  unit String?
+  id     Int              @id @default(autoincrement())
+  name   String           @unique
+  unit   String?
+  dishes DishIngredient[]
 
   @@map("ingredients")
+}
+
+// Bảng trung gian món – nguyên liệu. Khai báo tường minh (không dùng many-to-many ngầm định của Prisma)
+// vì cần 2 hành vi xoá khác nhau ở 2 khoá ngoại:
+//   - xoá món        → Cascade: xoá luôn các dòng liên kết của món đó, nguyên liệu không bị ảnh hưởng
+//   - xoá nguyên liệu → Restrict: database từ chối nếu nguyên liệu còn được món nào dùng
+model DishIngredient {
+  dishId       Int
+  ingredientId Int
+  dish         Dish       @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@id([dishId, ingredientId])
+  @@index([ingredientId])
+  @@map("dish_ingredients")
 }

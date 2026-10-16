@@ -4,12 +4,47 @@
 
 <div class="panel confirm">
   <h1>Xoá đầu bếp “<%= chef.name %>”?</h1>
-  <p class="muted">Thao tác này không khôi phục được.</p>
 
-  <form class="form-actions" method="POST">
-    <button class="btn btn-danger" formaction="/admin/chefs/<%= chef.id %>?_method=DELETE">Xoá</button>
-    <a class="btn" href="/admin/chefs">Huỷ</a>
-  </form>
+  <% if (error) { %><p class="alert" role="alert"><%= error %></p><% } %>
+
+  <% if (dishes.length === 0) { %>
+    <p class="muted">Đầu bếp không phụ trách món nào. Thao tác này không khôi phục được.</p>
+    <%# Xoá chỉ xảy ra khi bấm nút này: POST kèm ?_method=DELETE (method-override đổi thành DELETE). %>
+    <form class="form-actions" method="POST">
+      <button class="btn btn-danger" formaction="/admin/chefs/<%= chef.id %>?_method=DELETE">Xoá</button>
+      <a class="btn" href="/admin/chefs">Huỷ</a>
+    </form>
+  <% } else { %>
+    <p>Đầu bếp đang phụ trách <strong><%= dishes.length %> món</strong>. Món thuộc về nhà hàng nên không bị xoá theo:
+      cần chuyển các món sang đầu bếp khác trước.</p>
+    <ul class="related-list">
+      <% dishes.forEach(d => { %>
+        <li><span><%= d.name %></span> <a href="/admin/dishes/<%= d.id %>/edit">Đổi đầu bếp riêng món này</a></li>
+      <% }) %>
+    </ul>
+
+    <% if (otherChefs.length === 0) { %>
+      <p class="muted">Chưa có đầu bếp nào khác để nhận món. <a href="/admin/chefs/new">Thêm đầu bếp mới</a> trước.</p>
+      <a class="btn" href="/admin/chefs">Quay lại</a>
+    <% } else { %>
+      <%# Một request: chuyển toàn bộ món sang người được chọn rồi xoá đầu bếp, trong cùng một transaction ở server. %>
+      <form class="form" method="POST">
+        <label class="field">
+          <span>Chuyển toàn bộ <%= dishes.length %> món sang</span>
+          <select name="transferTo">
+            <option value="">— Chọn đầu bếp nhận món —</option>
+            <% otherChefs.forEach(c => { %>
+              <option value="<%= c.id %>" <%= transferTo === String(c.id) ? "selected" : "" %>><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button class="btn btn-danger" formaction="/admin/chefs/<%= chef.id %>?_method=DELETE">Chuyển món và xoá đầu bếp</button>
+          <a class="btn" href="/admin/chefs">Huỷ</a>
+        </div>
+      </form>
+    <% } %>
+  <% } %>
 </div>
 
 <%- include("../../partials/footer", { section: "admin" }) %>

@@ -25,8 +25,18 @@
     <dl class="facts">
       <dt>Mã món</dt><dd>#<%= dish.id %></dd>
       <dt>Loại</dt><dd><%= dish.category ?? "—" %></dd>
+      <dt>Đầu bếp</dt><dd><%= dish.chef.name %><% if (dish.chef.specialty) { %> <span class="muted" style="font-weight: 400">· <%= dish.chef.specialty %></span><% } %></dd>
       <dt>Tình trạng</dt><dd><%= dish.available ? "Đang phục vụ" : "Tạm hết" %></dd>
     </dl>
+
+    <% if (dish.ingredients.length) { %>
+      <section aria-labelledby="ingredients-title">
+        <h2 id="ingredients-title" class="section-label">Nguyên liệu</h2>
+        <ul class="ingredient-tags">
+          <% dish.ingredients.forEach(link => { %><li><%= link.ingredient.name %></li><% }) %>
+        </ul>
+      </section>
+    <% } %>
 
     <% if (dish.category) { %>
       <a class="btn" href="/dishes?category=<%= encodeURIComponent(dish.category) %>">Xem thêm món cùng loại</a>
