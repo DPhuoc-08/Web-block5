@@ -1,8 +1,8 @@
-<%- include("../../partials/header", { title: "Xoá đầu bếp" }) %>
+<%- include("../../partials/header", { title: "Xoá đầu bếp", section: "admin" }) %>
 
 <a class="back" href="/admin/chefs">← Danh sách đầu bếp</a>
 
-<div class="card confirm">
+<div class="panel confirm">
   <h1>Xoá đầu bếp “<%= chef.name %>”?</h1>
   <p class="muted">Thao tác này không khôi phục được.</p>
 
@@ -12,4 +12,4 @@
   </form>
 </div>
 
-<%- include("../../partials/footer") %>
+<%- include("../../partials/footer", { section: "admin" }) %>

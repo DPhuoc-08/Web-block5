@@ -2,23 +2,36 @@
 
 <a class="back" href="/dishes">← Thực đơn</a>
 
-<div class="card detail">
-  <h1><%= dish.name %></h1>
-  <p class="price"><%= dish.price.toLocaleString("vi-VN") %>đ</p>
+<div class="detail">
+  <figure class="detail-photo" style="margin: 0">
+    <% if (dish.imageUrl) { %>
+      <img src="<%= dish.imageUrl %>" alt="<%= dish.name %>" referrerpolicy="no-referrer" width="960" height="720">
+      <% if (dish.imageCredit) { %><figcaption>Ảnh: <%= dish.imageCredit %></figcaption><% } %>
+    <% } else { %>
+      <div class="no-photo">Chưa có ảnh cho món này</div>
+    <% } %>
+  </figure>
 
-  <dl>
-    <dt>Loại</dt>
-    <dd><% if (dish.category) { %><span class="chip"><%= dish.category %></span><% } else { %>—<% } %></dd>
-
-    <dt>Tình trạng</dt>
-    <dd>
+  <div class="detail-info">
+    <% if (dish.category) { %><span class="tag"><%= dish.category %></span><% } %>
+    <h1><%= dish.name %></h1>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+      <span class="detail-price"><%= dish.price.toLocaleString("vi-VN") %>đ</span>
       <% if (dish.available) { %><span class="badge on">Đang phục vụ</span>
       <% } else { %><span class="badge off">Tạm hết</span><% } %>
-    </dd>
+    </div>
+    <p class="detail-desc"><%= dish.description ?? "Chưa có mô tả cho món này." %></p>
 
-    <dt>Mô tả</dt>
-    <dd><%= dish.description ?? "—" %></dd>
-  </dl>
+    <dl class="facts">
+      <dt>Mã món</dt><dd>#<%= dish.id %></dd>
+      <dt>Loại</dt><dd><%= dish.category ?? "—" %></dd>
+      <dt>Tình trạng</dt><dd><%= dish.available ? "Đang phục vụ" : "Tạm hết" %></dd>
+    </dl>
+
+    <% if (dish.category) { %>
+      <a class="btn" href="/dishes?category=<%= encodeURIComponent(dish.category) %>">Xem thêm món cùng loại</a>
+    <% } %>
+  </div>
 </div>
 
 <%- include("../partials/footer") %>

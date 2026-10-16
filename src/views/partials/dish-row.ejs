@@ -1,0 +1,17 @@
+<%# Một dòng món trên thực đơn. Link chỉ mang id (path param); trang chi tiết tự đọc lại món từ database. %>
+<a class="dish-row <%= d.available ? "" : "unavailable" %>" href="/dishes/<%= d.id %>">
+  <% if (d.imageUrl) { %>
+    <img class="dish-thumb" src="<%= d.imageUrl %>" alt="<%= d.name %>" loading="lazy" referrerpolicy="no-referrer" width="120" height="90">
+  <% } else { %>
+    <span class="dish-thumb no-photo">Chưa có ảnh</span>
+  <% } %>
+  <span>
+    <span class="dish-name"><%= d.name %></span>
+    <% if (d.description) { %><span class="dish-desc"><%= d.description %></span><% } %>
+    <span class="dish-meta">
+      <% if (showCategory && d.category) { %><span class="tag"><%= d.category %></span><% } %>
+      <% if (!d.available) { %><span class="badge off">Tạm hết</span><% } %>
+    </span>
+  </span>
+  <span class="dish-price"><%= d.price.toLocaleString("vi-VN") %>đ</span>
+</a>

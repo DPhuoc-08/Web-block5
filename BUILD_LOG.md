@@ -220,3 +220,31 @@
 **Phương án đã bỏ:** tự vẽ/sinh ảnh (người dùng yêu cầu ảnh thật); tải ảnh về `public/` (tăng dung lượng repo, phải tự quản lý bản quyền file).
 
 **Điều chưa chắc:** ảnh phụ thuộc máy chủ bên ngoài — nếu link chết, view hiện khung "Chưa có ảnh" (bước giao diện). Flickr trả lỗi 500 cho request có User-Agent quá đơn giản (curl); trình duyệt tải bình thường.
+
+### B — Tìm kiếm trang quản trị + trường ảnh trong form món
+**Đã làm:** `searchWhere(q, fields)` trong `validators/common.js` (OR `contains` + `insensitive` trên nhiều cột); route danh sách của 3 thực thể đọc `?q=`; partial `admin-search.ejs` (form GET, nút "Xoá tìm kiếm", dòng "Tìm thấy N kết quả"). `validateDish` thêm `imageUrl` (không bắt buộc; có thì phải là URL `http:`/`https:`, ≤ 1000 ký tự) và `imageCredit` (≤ 200 ký tự); form sửa hiện ảnh xem trước.
+
+**Quyết định và lý do:**
+- **Tìm trên 2 cột mỗi thực thể** (món: tên/loại; đầu bếp: tên/chuyên môn; nguyên liệu: tên/đơn vị): admin thường nhớ một trong hai.
+- **Chỉ nhận link `http(s)`:** link ảnh được đặt vào `<img src>`; chặn `javascript:`, `data:`.
+
+### C — Lọc món phía người dùng
+**Đã làm:** `validators/menu-filters.js` đọc `q`, `category`, `price`, `available`, `sort` từ query string → `where` (AND các điều kiện) + `orderBy`. Danh sách loại lấy từ DB (`distinct`). Chip loại là link GET giữ nguyên các tiêu chí khác (`filterUrl`); các tiêu chí còn lại là form GET.
+
+**Quyết định và lý do:**
+- **Tất cả qua query string (GET):** đúng vai trò "query = điều kiện hiển thị" của `block5.md`; kết quả bookmark được; không cần JavaScript.
+- **Giá trị sai bị bỏ qua, không trả 400:** người dùng chỉ đang xem; `?price=abc` hay loại không tồn tại → coi như không lọc.
+- **Sắp xếp mặc định → nhóm theo loại** (như thực đơn in); chọn sắp xếp khác → một danh sách phẳng, vì sắp theo giá mà vẫn chia nhóm thì thứ tự giá bị cắt vụn.
+- **Khoảng giá cố định** (dưới 40k / 40–60k / trên 60k): đủ cho thực đơn nhỏ, dễ chọn hơn 2 ô nhập min–max.
+
+### D — Áp dụng mockup + nâng cấp giao diện
+**Đã làm:** viết lại `public/css/style.css` và các view: header chung (đánh dấu trang hiện tại), thực đơn có ảnh thumbnail + nhóm loại chảy 2 cột, chi tiết món ảnh lớn + ghi công ảnh, admin đơn giản (nền xám nhạt, bảng có ảnh nhỏ, ô tìm kiếm), 404/500.
+
+**Quyết định và lý do:**
+- **Giữ bố cục mockup, đổi phong cách để tránh "AI look"** (người dùng yêu cầu): bỏ nền kem + font serif + màu đất nung (kiểu phối mặc định của công cụ thiết kế AI); dùng nền trắng, một font **Be Vietnam Pro** (hỗ trợ tiếng Việt tốt), một màu nhấn xanh lá đậm `#1f5b43`, để **ảnh món ăn** là điểm nhấn. Không gradient, không emoji.
+- **Ảnh lỗi/thiếu:** khung "Chưa có ảnh"; món tạm hết: ảnh xám + giá gạch ngang.
+- **Accessibility:** ô nhập có `<label>`, vùng chạm ≥ 44px, trạng thái chip bằng `aria-current`, link trang hiện tại có `aria-current="page"`.
+
+**Đã kiểm tra:** 14 tổ hợp lọc (từng tiêu chí, kết hợp nhiều tiêu chí, giá trị sai, `?q=a&q=b`) ra đúng số món và thứ tự; tìm kiếm admin 3 thực thể đúng; link ảnh `javascript:` và `abc` → `400`, link hợp lệ → `303` + có ảnh xem trước; CRUD chefs 25/25, ingredients 25/25; chụp màn hình 1280px và 375px, sửa 2 lỗi thấy được (nhóm 1 món để trống cột phải; ảnh dọc bị kéo cao ở trang chi tiết). Seed lại sau test → id vẫn 1–6.
+
+**Phương án đã bỏ:** lưới thẻ ảnh lớn kiểu app giao đồ ăn (xa bố cục mockup đã duyệt); giữ nguyên nền kem + serif của mockup (người dùng muốn tránh "AI look").

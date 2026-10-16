@@ -1,4 +1,4 @@
-<%- include("../../partials/header", { title: "Quản trị món ăn" }) %>
+<%- include("../../partials/header", { title: "Quản trị món ăn", section: "admin" }) %>
 <%- include("../../partials/admin-nav", { current: "dishes" }) %>
 
 <div class="toolbar">
@@ -6,18 +6,21 @@
   <a class="btn btn-primary" href="/admin/dishes/new">+ Thêm món</a>
 </div>
 
+<%- include("../../partials/admin-search", { action: "/admin/dishes", q, count: dishes.length, label: "Tìm món", placeholder: "Tìm theo tên hoặc loại món" }) %>
+
 <% if (dishes.length === 0) { %>
-  <div class="card empty">Chưa có món nào.</div>
+  <div class="panel empty"><%= q ? "Không có món nào khớp từ khoá." : "Chưa có món nào." %></div>
 <% } else { %>
-  <div class="card table-wrap">
+  <div class="panel table-wrap">
     <table>
       <thead>
-        <tr><th>#</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Tình trạng</th><th></th></tr>
+        <tr><th>#</th><th>Ảnh</th><th>Tên</th><th>Giá</th><th>Loại</th><th>Tình trạng</th><th><span class="sr-only">Thao tác</span></th></tr>
       </thead>
       <tbody>
         <% dishes.forEach(d => { %>
           <tr>
             <td class="num"><%= d.id %></td>
+            <td><% if (d.imageUrl) { %><img class="table-thumb" src="<%= d.imageUrl %>" alt="" loading="lazy" referrerpolicy="no-referrer"><% } else { %><span class="muted">—</span><% } %></td>
             <td><a href="/dishes/<%= d.id %>"><%= d.name %></a></td>
             <td><%= d.price.toLocaleString("vi-VN") %>đ</td>
             <td><%= d.category ?? "—" %></td>
@@ -34,4 +37,4 @@
   </div>
 <% } %>
 
-<%- include("../../partials/footer") %>
+<%- include("../../partials/footer", { section: "admin" }) %>

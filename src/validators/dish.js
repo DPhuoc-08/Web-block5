@@ -2,6 +2,16 @@ import { str } from "./common.js";
 
 const MAX_INT = 2147483647;
 
+// Link ảnh chỉ nhận http(s): chặn `javascript:`, `data:`... vì giá trị này được đặt vào <img src>.
+function isHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 // Nhận req.body, trả về:
 // - data:   object sạch, chỉ gồm các cột của Dish → đưa vào prisma.dish.create/update
 // - errors: { tênTrường: thông báo }; rỗng nghĩa là hợp lệ
@@ -13,6 +23,8 @@ export function validateDish(body) {
     price: str(body.price),
     category: str(body.category),
     description: str(body.description),
+    imageUrl: str(body.imageUrl),
+    imageCredit: str(body.imageCredit),
     // Checkbox bỏ trống thì trình duyệt không gửi trường này.
     available: body.available === "on",
   };
@@ -26,11 +38,21 @@ export function validateDish(body) {
     errors.price = "Giá phải là số nguyên không âm (đơn vị đồng), ví dụ 50000.";
   }
 
+  // Ảnh không bắt buộc; có nhập thì phải là link http(s) hợp lệ.
+  if (values.imageUrl && (!isHttpUrl(values.imageUrl) || values.imageUrl.length > 1000)) {
+    errors.imageUrl = "Link ảnh phải bắt đầu bằng http:// hoặc https:// (tối đa 1000 ký tự).";
+  }
+  if (values.imageCredit.length > 200) {
+    errors.imageCredit = "Ghi công ảnh tối đa 200 ký tự.";
+  }
+
   const data = {
     name: values.name,
     price: Number(values.price),
     category: values.category || null,
     description: values.description || null,
+    imageUrl: values.imageUrl || null,
+    imageCredit: values.imageCredit || null,
     available: values.available,
   };
 
@@ -39,12 +61,16 @@ export function validateDish(body) {
 
 // Giá trị ban đầu của form: trống khi thêm mới, lấy từ bản ghi khi sửa.
 export function dishToValues(dish) {
-  if (!dish) return { name: "", price: "", category: "", description: "", available: true };
+  if (!dish) {
+    return { name: "", price: "", category: "", description: "", imageUrl: "", imageCredit: "", available: true };
+  }
   return {
     name: dish.name,
     price: String(dish.price),
     category: dish.category ?? "",
     description: dish.description ?? "",
+    imageUrl: dish.imageUrl ?? "",
+    imageCredit: dish.imageCredit ?? "",
     available: dish.available,
   };
 }

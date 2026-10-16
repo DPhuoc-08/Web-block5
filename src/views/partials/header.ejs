@@ -1,18 +1,22 @@
+<% const area = locals.section === "admin" ? "admin" : "menu"; -%>
 <!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %> · Nhà hàng</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body class="<%= area === "admin" ? "admin" : "" %>">
   <header class="site-header">
     <div class="container">
-      <a class="brand" href="/dishes">🍜 Nhà hàng</a>
-      <nav class="site-nav">
-        <a href="/dishes">Thực đơn</a>
-        <a href="/admin/dishes">Quản trị</a>
+      <a class="brand" href="/dishes">Nhà hàng<% if (area === "admin") { %> <span>/ Quản trị</span><% } %></a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="/dishes" <%- area === "menu" ? 'aria-current="page"' : "" %>>Thực đơn</a>
+        <a href="/admin/dishes" <%- area === "admin" ? 'aria-current="page"' : "" %>>Quản trị</a>
       </nav>
     </div>
   </header>

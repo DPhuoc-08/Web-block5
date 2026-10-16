@@ -1,0 +1,10 @@
+<%# Tìm kiếm trong trang quản trị: form GET, từ khoá nằm trên URL (?q=...), không ghi dữ liệu. %>
+<form class="admin-search" method="GET" action="<%= action %>" role="search">
+  <label class="sr-only" for="admin-q"><%= label %></label>
+  <input id="admin-q" name="q" value="<%= q %>" placeholder="<%= placeholder %>">
+  <button class="btn">Tìm</button>
+  <% if (q) { %><a class="btn" href="<%= action %>">Xoá tìm kiếm</a><% } %>
+</form>
+<% if (q) { %>
+  <p class="muted" role="status" style="margin: 0 0 12px">Tìm thấy <%= count %> kết quả cho “<%= q %>”.</p>
+<% } %>

@@ -1,30 +1,80 @@
 <%- include("../partials/header", { title: "Thực đơn" }) %>
 
-<h1>Thực đơn</h1>
+<section class="page-head">
+  <h1>Thực đơn</h1>
+  <p>Chọn món để xem mô tả, giá và tình trạng phục vụ.</p>
+</section>
 
-<%# Form GET: từ khoá đi lên URL (/dishes?q=...), nên kết quả tìm kiếm bookmark/chia sẻ được. %>
-<form class="search" method="GET" action="/dishes">
-  <input name="q" value="<%= q %>" placeholder="Tìm theo tên món, vd. phở">
-  <button class="btn btn-primary">Tìm</button>
-  <% if (q) { %><a class="btn" href="/dishes">Bỏ lọc</a><% } %>
-</form>
+<%# Bộ lọc là form GET: mọi tiêu chí nằm trên URL (/dishes?q=&category=&price=&available=1&sort=),
+    nên kết quả lọc bookmark/chia sẻ được và F5 không gửi lại gì. Không dùng JavaScript. %>
+<section class="filters" aria-label="Lọc món">
+  <nav class="chips" aria-label="Lọc theo loại">
+    <a class="chip" href="<%= filterUrl({ category: "" }) %>" aria-current="<%= filters.category ? "false" : "true" %>">Tất cả</a>
+    <% categories.forEach(c => { %>
+      <a class="chip" href="<%= filterUrl({ category: c }) %>" aria-current="<%= filters.category === c ? "true" : "false" %>"><%= c %></a>
+    <% }) %>
+  </nav>
+
+  <form class="filter-row" method="GET" action="/dishes">
+    <%# Giữ loại đang chọn khi bấm Lọc. %>
+    <% if (filters.category) { %><input type="hidden" name="category" value="<%= filters.category %>"><% } %>
+    <label class="field grow">
+      <span>Tên món</span>
+      <input name="q" value="<%= filters.q %>" placeholder="Ví dụ: phở, bún, cơm">
+    </label>
+    <label class="field fixed">
+      <span>Khoảng giá</span>
+      <select name="price">
+        <option value="">Mọi mức giá</option>
+        <% priceRanges.forEach(p => { %>
+          <option value="<%= p.value %>" <%= filters.price === p.value ? "selected" : "" %>><%= p.label %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label class="field fixed">
+      <span>Sắp xếp</span>
+      <select name="sort">
+        <% sorts.forEach(s => { %>
+          <option value="<%= s.value %>" <%= filters.sort === s.value ? "selected" : "" %>><%= s.label %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label class="check">
+      <input type="checkbox" name="available" value="1" <%= filters.available ? "checked" : "" %>>
+      Chỉ món còn phục vụ
+    </label>
+    <button class="btn btn-primary">Lọc</button>
+  </form>
+</section>
+
+<div class="result-line" role="status">
+  <span><%= dishes.length %> món<%= isFiltered ? " khớp bộ lọc" : "" %></span>
+  <% if (isFiltered) { %><a href="/dishes">Xoá bộ lọc</a><% } %>
+</div>
 
 <% if (dishes.length === 0) { %>
-  <div class="card empty"><%= q ? `Không có món nào khớp "${q}".` : "Chưa có món nào." %></div>
-<% } else { %>
-  <div class="menu-grid">
-    <%# Mỗi thẻ là link chỉ mang id (path param); trang chi tiết tự đọc lại món từ database. %>
-    <% dishes.forEach(d => { %>
-      <a class="card dish-card <%= d.available ? "" : "unavailable" %>" href="/dishes/<%= d.id %>">
-        <span class="name"><%= d.name %></span>
-        <span class="meta">
-          <% if (d.category) { %><span class="chip"><%= d.category %></span><% } %>
-          <% if (!d.available) { %><span class="badge off">Tạm hết</span><% } %>
-        </span>
-        <span class="price"><%= d.price.toLocaleString("vi-VN") %>đ</span>
-      </a>
+  <div class="empty">
+    <strong>Không có món nào khớp bộ lọc.</strong>
+    Thử bỏ bớt tiêu chí hoặc <a href="/dishes">xem toàn bộ thực đơn</a>.
+  </div>
+<% } else if (groups) { %>
+  <div class="menu-columns">
+    <% groups.forEach(g => { %>
+      <section class="menu-group">
+        <h2><%= g.name %> <small><%= g.dishes.length %> món</small></h2>
+        <div class="menu-grid">
+          <% g.dishes.forEach(d => { %><%- include("../partials/dish-row", { d, showCategory: false }) %><% }) %>
+        </div>
+      </section>
     <% }) %>
   </div>
+<% } else { %>
+  <section class="menu-group">
+    <h2 class="sr-only">Kết quả</h2>
+    <div class="menu-grid flat">
+      <% dishes.forEach(d => { %><%- include("../partials/dish-row", { d, showCategory: true }) %><% }) %>
+    </div>
+  </section>
 <% } %>
 
 <%- include("../partials/footer") %>

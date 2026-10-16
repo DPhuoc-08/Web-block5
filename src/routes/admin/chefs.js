@@ -4,7 +4,7 @@ import { Router } from "express";
 import { prisma, isNotFound } from "../../db.js";
 import { parseId } from "../../validators/id.js";
 import { validateChef, chefToValues } from "../../validators/chef.js";
-import { hasErrors } from "../../validators/common.js";
+import { hasErrors, str, searchWhere } from "../../validators/common.js";
 
 const router = Router();
 
@@ -14,8 +14,9 @@ const renderForm = (res, { status = 200, id = null, values, errors = {} }) =>
   res.status(status).render("admin/chefs/form", { id, values, errors });
 
 router.get("/", async (req, res) => {
-  const chefs = await prisma.chef.findMany({ orderBy: { id: "asc" } });
-  res.render("admin/chefs/index", { chefs });
+  const q = str(req.query.q);
+  const chefs = await prisma.chef.findMany({ where: searchWhere(q, ["name", "specialty"]), orderBy: { id: "asc" } });
+  res.render("admin/chefs/index", { chefs, q });
 });
 
 router.get("/new", (req, res) => {

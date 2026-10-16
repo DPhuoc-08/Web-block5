@@ -1,10 +1,11 @@
 <% const isEdit = id !== null; -%>
-<%- include("../../partials/header", { title: isEdit ? "Sửa món" : "Thêm món" }) %>
+<%- include("../../partials/header", { title: isEdit ? "Sửa món" : "Thêm món", section: "admin" }) %>
 
 <a class="back" href="/admin/dishes">← Danh sách món</a>
 
-<div class="card form-card">
+<div class="panel form-panel">
   <h1><%= isEdit ? "Sửa món" : "Thêm món" %></h1>
+  <% if (isEdit) { %><p class="muted" style="margin: 0">Món #<%= id %></p><% } %>
 
   <% if (Object.keys(errors).length) { %>
     <p class="alert">Dữ liệu chưa hợp lệ, vui lòng sửa các trường bên dưới.</p>
@@ -35,6 +36,22 @@
       <textarea name="description" rows="3"><%= values.description %></textarea>
     </label>
 
+    <label class="field <%= errors.imageUrl ? "invalid" : "" %>">
+      <span>Link ảnh minh hoạ</span>
+      <input name="imageUrl" value="<%= values.imageUrl %>" placeholder="https://upload.wikimedia.org/...">
+      <span class="hint">Dán link trực tiếp tới file ảnh (nên dùng ảnh có giấy phép mở, vd. Wikimedia Commons).</span>
+      <% if (errors.imageUrl) { %><span class="error"><%= errors.imageUrl %></span><% } %>
+    </label>
+    <% if (values.imageUrl && !errors.imageUrl) { %>
+      <img class="image-preview" src="<%= values.imageUrl %>" alt="Ảnh hiện tại của món" referrerpolicy="no-referrer">
+    <% } %>
+
+    <label class="field <%= errors.imageCredit ? "invalid" : "" %>">
+      <span>Ghi công ảnh</span>
+      <input name="imageCredit" value="<%= values.imageCredit %>" placeholder="Tác giả · Giấy phép · Nguồn">
+      <% if (errors.imageCredit) { %><span class="error"><%= errors.imageCredit %></span><% } %>
+    </label>
+
     <label class="field inline">
       <input name="available" type="checkbox" <%= values.available ? "checked" : "" %>>
       <span>Đang phục vụ</span>
@@ -47,4 +64,4 @@
   </form>
 </div>
 
-<%- include("../../partials/footer") %>
+<%- include("../../partials/footer", { section: "admin" }) %>

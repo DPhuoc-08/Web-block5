@@ -1,4 +1,4 @@
-<%- include("../../partials/header", { title: "Quản trị nguyên liệu" }) %>
+<%- include("../../partials/header", { title: "Quản trị nguyên liệu", section: "admin" }) %>
 <%- include("../../partials/admin-nav", { current: "ingredients" }) %>
 
 <div class="toolbar">
@@ -6,13 +6,15 @@
   <a class="btn btn-primary" href="/admin/ingredients/new">+ Thêm nguyên liệu</a>
 </div>
 
+<%- include("../../partials/admin-search", { action: "/admin/ingredients", q, count: ingredients.length, label: "Tìm nguyên liệu", placeholder: "Tìm theo tên hoặc đơn vị" }) %>
+
 <% if (ingredients.length === 0) { %>
-  <div class="card empty">Chưa có nguyên liệu nào.</div>
+  <div class="panel empty"><%= q ? "Không có nguyên liệu nào khớp từ khoá." : "Chưa có nguyên liệu nào." %></div>
 <% } else { %>
-  <div class="card table-wrap">
+  <div class="panel table-wrap">
     <table>
       <thead>
-        <tr><th>#</th><th>Tên</th><th>Đơn vị</th><th></th></tr>
+        <tr><th>#</th><th>Tên</th><th>Đơn vị</th><th><span class="sr-only">Thao tác</span></th></tr>
       </thead>
       <tbody>
         <% ingredients.forEach(i => { %>
@@ -31,4 +33,4 @@
   </div>
 <% } %>
 
-<%- include("../../partials/footer") %>
+<%- include("../../partials/footer", { section: "admin" }) %>

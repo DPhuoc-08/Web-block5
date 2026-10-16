@@ -1,9 +1,9 @@
 <% const isEdit = id !== null; -%>
-<%- include("../../partials/header", { title: isEdit ? "Sửa nguyên liệu" : "Thêm nguyên liệu" }) %>
+<%- include("../../partials/header", { title: isEdit ? "Sửa nguyên liệu" : "Thêm nguyên liệu", section: "admin" }) %>
 
 <a class="back" href="/admin/ingredients">← Danh sách nguyên liệu</a>
 
-<div class="card form-card">
+<div class="panel form-panel">
   <h1><%= isEdit ? "Sửa nguyên liệu" : "Thêm nguyên liệu" %></h1>
 
   <% if (Object.keys(errors).length) { %>
@@ -29,4 +29,4 @@
   </form>
 </div>
 
-<%- include("../../partials/footer") %>
+<%- include("../../partials/footer", { section: "admin" }) %>

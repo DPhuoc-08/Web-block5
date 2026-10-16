@@ -4,7 +4,7 @@ import { Router } from "express";
 import { prisma, isNotFound } from "../../db.js";
 import { parseId } from "../../validators/id.js";
 import { validateDish, dishToValues } from "../../validators/dish.js";
-import { hasErrors } from "../../validators/common.js";
+import { hasErrors, str, searchWhere } from "../../validators/common.js";
 
 const router = Router();
 
@@ -15,8 +15,10 @@ const renderForm = (res, { status = 200, id = null, values, errors = {} }) =>
   res.status(status).render("admin/dishes/form", { id, values, errors });
 
 router.get("/", async (req, res) => {
-  const dishes = await prisma.dish.findMany({ orderBy: { id: "asc" } });
-  res.render("admin/dishes/index", { dishes });
+  // Tìm kiếm qua query string (?q=...): GET chỉ đọc, kết quả bookmark được.
+  const q = str(req.query.q);
+  const dishes = await prisma.dish.findMany({ where: searchWhere(q, ["name", "category"]), orderBy: { id: "asc" } });
+  res.render("admin/dishes/index", { dishes, q });
 });
 
 router.get("/new", (req, res) => {

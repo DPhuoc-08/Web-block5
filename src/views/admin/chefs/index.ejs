@@ -1,4 +1,4 @@
-<%- include("../../partials/header", { title: "Quản trị đầu bếp" }) %>
+<%- include("../../partials/header", { title: "Quản trị đầu bếp", section: "admin" }) %>
 <%- include("../../partials/admin-nav", { current: "chefs" }) %>
 
 <div class="toolbar">
@@ -6,13 +6,15 @@
   <a class="btn btn-primary" href="/admin/chefs/new">+ Thêm đầu bếp</a>
 </div>
 
+<%- include("../../partials/admin-search", { action: "/admin/chefs", q, count: chefs.length, label: "Tìm đầu bếp", placeholder: "Tìm theo tên hoặc chuyên môn" }) %>
+
 <% if (chefs.length === 0) { %>
-  <div class="card empty">Chưa có đầu bếp nào.</div>
+  <div class="panel empty"><%= q ? "Không có đầu bếp nào khớp từ khoá." : "Chưa có đầu bếp nào." %></div>
 <% } else { %>
-  <div class="card table-wrap">
+  <div class="panel table-wrap">
     <table>
       <thead>
-        <tr><th>#</th><th>Tên</th><th>Chuyên môn</th><th></th></tr>
+        <tr><th>#</th><th>Tên</th><th>Chuyên môn</th><th><span class="sr-only">Thao tác</span></th></tr>
       </thead>
       <tbody>
         <% chefs.forEach(c => { %>
@@ -31,4 +33,4 @@
   </div>
 <% } %>
 
-<%- include("../../partials/footer") %>
+<%- include("../../partials/footer", { section: "admin" }) %>

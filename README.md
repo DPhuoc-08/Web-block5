@@ -2,8 +2,8 @@
 
 Ứng dụng Express render HTML phía server (EJS), đọc/ghi Supabase PostgreSQL qua Prisma ORM.
 
-- **Trang người dùng:** xem thực đơn, tìm món theo tên, xem chi tiết món.
-- **Trang quản trị (`/admin`):** thêm, sửa, xoá Món ăn, Đầu bếp, Nguyên liệu.
+- **Trang người dùng:** xem thực đơn có ảnh minh hoạ, tìm và lọc món (loại, khoảng giá, còn phục vụ, sắp xếp), xem chi tiết món.
+- **Trang quản trị (`/admin`):** tìm kiếm, thêm, sửa, xoá Món ăn, Đầu bếp, Nguyên liệu; gắn link ảnh cho món.
 
 Không dùng `fetch`/AJAX: mọi dữ liệu đi qua HTML form. Ghi dữ liệu bằng `POST` / `PATCH` / `DELETE` (qua `method-override`), ghi xong redirect `303` (Post/Redirect/Get).
 
@@ -61,7 +61,7 @@ Mở http://localhost:3000 (đổi cổng bằng biến `PORT` trong `.env`).
 ### Người dùng
 | Method | URL | Mô tả |
 | :--- | :--- | :--- |
-| GET | `/dishes` | Thực đơn; tìm theo tên với `?q=...` (không phân biệt hoa thường) |
+| GET | `/dishes` | Thực đơn. Lọc qua query string: `q` (tên, không phân biệt hoa thường), `category` (loại), `price` (`duoi-40k` \| `40k-60k` \| `tren-60k`), `available=1` (chỉ món còn phục vụ), `sort` (`gia-tang` \| `gia-giam` \| `ten`). Giá trị sai bị bỏ qua |
 | GET | `/dishes/:id` | Chi tiết món; id sai định dạng hoặc không tồn tại → `404` |
 
 ### Quản trị
@@ -69,7 +69,7 @@ Cùng một bộ route cho `dishes`, `chefs`, `ingredients`:
 
 | Method | URL | Mô tả | Kết quả |
 | :--- | :--- | :--- | :--- |
-| GET | `/admin/<entity>` | Danh sách | `200` |
+| GET | `/admin/<entity>` | Danh sách; tìm với `?q=...` (món: tên/loại · đầu bếp: tên/chuyên môn · nguyên liệu: tên/đơn vị) | `200` |
 | GET | `/admin/<entity>/new` | Form thêm | `200` |
 | POST | `/admin/<entity>` | Thêm | `303` hoặc `400` |
 | GET | `/admin/<entity>/:id/edit` | Form sửa | `200` hoặc `404` |
@@ -78,6 +78,9 @@ Cùng một bộ route cho `dishes`, `chefs`, `ingredients`:
 | DELETE | `/admin/<entity>/:id` | Xoá | `303` hoặc `404` |
 
 Ghi thành công: món ăn → trang chi tiết `/dishes/:id` (thêm, sửa); đầu bếp, nguyên liệu → trang danh sách; xoá → trang danh sách.
+
+## Ảnh món ăn
+Ảnh là **link trực tiếp** tới ảnh có giấy phép mở (Wikimedia Commons, Flickr), lưu ở cột `imageUrl`; tác giả + giấy phép ở cột `imageCredit`, hiển thị dưới ảnh trong trang chi tiết. Repo không chứa file ảnh. Danh sách nguồn từng ảnh: xem `BUILD_LOG.md`, mục "A — Ảnh minh hoạ".
 
 ## Cấu trúc thư mục
 ```
