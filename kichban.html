@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kịch bản – Block 5</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #1f2933;
+    --muted: #5b6672;
+    --border: #e1e5ea;
+    --accent: #2563eb;
+    --accent-soft: #e8efff;
+    --ok: #15803d;
+    --ok-soft: #e7f6ec;
+    --warn: #b45309;
+    --warn-soft: #fff4e0;
+    --err: #dc2626;
+    --err-soft: #fdecec;
+    --code-bg: #f1f3f6;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 16px; }
+  @media (min-width: 768px) { .wrap { padding: 24px; } }
+
+  header.top h1 { margin: 0; font-size: 28px; line-height: 1.25; }
+  header.top p { margin: 4px 0 0; color: var(--muted); }
+
+  nav.toc {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    margin: 12px -16px 0; padding: 8px 16px;
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  nav.toc a {
+    text-decoration: none; color: var(--text);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px 12px; font-size: 14px;
+  }
+  nav.toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+  section { margin-top: 32px; scroll-margin-top: 56px; }
+  h2 { font-size: 22px; margin: 0 0 12px; }
+  h2 .num { color: var(--accent); margin-right: 6px; }
+  h3 { font-size: 17px; margin: 0 0 8px; }
+  p { margin: 0 0 10px; }
+
+  code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--code-bg); padding: 1px 5px; border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .grid { display: grid; gap: 12px; }
+  @media (min-width: 768px) {
+    .grid.c2 { grid-template-columns: 1fr 1fr; }
+    .grid.c3 { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  .callout {
+    border-left: 4px solid var(--accent); background: var(--accent-soft);
+    padding: 10px 14px; border-radius: 6px; margin: 0 0 12px;
+  }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .note { color: var(--muted); font-size: 14px; margin-top: 8px; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .03em; }
+  tr:last-child td { border-bottom: 0; }
+
+  .tbl-name { font-family: var(--mono); color: var(--muted); font-size: 13px; font-weight: 400; margin-left: 6px; }
+
+  .m { font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+  .m.get { background: var(--accent-soft); color: var(--accent); }
+  .m.post { background: var(--ok-soft); color: var(--ok); }
+  .m.patch { background: var(--warn-soft); color: var(--warn); }
+  .m.delete { background: var(--err-soft); color: var(--err); }
+  .s { font-family: var(--mono); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .s.ok { color: var(--ok); }
+  .s.redir { color: var(--accent); }
+  .s.bad { color: var(--err); }
+
+  ul.plain { margin: 0; padding-left: 20px; }
+  ul.plain li { margin: 2px 0; }
+
+  /* Luồng: chuỗi bước có nhãn ai làm */
+  ol.flow { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  ol.flow > li {
+    counter-increment: step; position: relative;
+    padding: 6px 0 6px 38px; border-left: 2px solid var(--border); margin-left: 12px;
+  }
+  ol.flow > li:last-child { border-left-color: transparent; }
+  ol.flow > li::before {
+    content: counter(step); position: absolute; left: -13px; top: 6px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--accent); color: var(--accent);
+    font-size: 12px; font-weight: 700; display: grid; place-items: center;
+  }
+  .who {
+    display: inline-block; font-size: 12px; font-weight: 600; min-width: 62px;
+    padding: 0 6px; border-radius: 4px; margin-right: 6px; text-align: center;
+    background: var(--code-bg); color: var(--muted);
+  }
+  .who.db { background: var(--ok-soft); color: var(--ok); }
+  .who.br { background: var(--accent-soft); color: var(--accent); }
+  .branch {
+    margin: 4px 0 0; padding: 6px 10px; border-radius: 6px;
+    background: var(--err-soft); font-size: 14px;
+  }
+
+  .prg {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    font-size: 14px; margin: 4px 0 0;
+  }
+  .prg span.box { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+  .prg .arrow { color: var(--muted); }
+
+  ol.demo { margin: 0; padding-left: 22px; }
+  ol.demo li { margin: 6px 0; }
+  ol.demo .see { color: var(--muted); }
+
+  footer.end { margin: 40px 0 16px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Kịch bản – Block 5: Ứng dụng nhà hàng</h1>
+  <p>Express + EJS (render ở server) · Prisma · Supabase PostgreSQL</p>
+</header>
+
+<nav class="toc">
+  <a href="#db">1. Database</a>
+  <a href="#chucnang">2. Chức năng</a>
+  <a href="#luong">3. Luồng hoạt động</a>
+  <a href="#loi">4. Mã lỗi</a>
+  <a href="#demo">5. Kịch bản demo</a>
+</nav>
+
+<!-- ============ 1. DATABASE ============ -->
+<section id="db">
+  <h2><span class="num">1</span>Cấu trúc database: 3 bảng là đủ</h2>
+  <div class="callout">
+    Đề chỉ yêu cầu 3 đối tượng <strong>độc lập</strong>: món ăn, đầu bếp, nguyên liệu. Đề không hỏi "món nào do đầu bếp nào nấu"
+    hay "món dùng nguyên liệu gì", nên <strong>không cần khóa ngoại hay bảng nối</strong>. Mỗi model Prisma tương ứng một bảng.
+  </div>
+
+  <div class="grid c3">
+    <div class="card">
+      <h3>Dish <span class="tbl-name">dishes</span></h3>
+      <div class="table-wrap"><table>
+        <tr><th>Cột</th><th>Kiểu</th></tr>
+        <tr><td><code>id</code></td><td>Int, tự tăng</td></tr>
+        <tr><td><code>name</code></td><td>String, bắt buộc</td></tr>
+        <tr><td><code>description</code></td><td>String?</td></tr>
+        <tr><td><code>price</code></td><td>Int (đồng), ≥ 0</td></tr>
+        <tr><td><code>category</code></td><td>String?</td></tr>
+        <tr><td><code>available</code></td><td>Boolean, mặc định true</td></tr>
+        <tr><td><code>createdAt</code></td><td>DateTime, mặc định now()</td></tr>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>Chef <span class="tbl-name">chefs</span></h3>
+      <div class="table-wrap"><table>
+        <tr><th>Cột</th><th>Kiểu</th></tr>
+        <tr><td><code>id</code></td><td>Int, tự tăng</td></tr>
+        <tr><td><code>name</code></td><td>String, bắt buộc</td></tr>
+        <tr><td><code>specialty</code></td><td>String?</td></tr>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>Ingredient <span class="tbl-name">ingredients</span></h3>
+      <div class="table-wrap"><table>
+        <tr><th>Cột</th><th>Kiểu</th></tr>
+        <tr><td><code>id</code></td><td>Int, tự tăng</td></tr>
+        <tr><td><code>name</code></td><td>String, bắt buộc</td></tr>
+        <tr><td><code>unit</code></td><td>String?</td></tr>
+      </table></div>
+    </div>
+  </div>
+  <p class="note">
+    <code>?</code> = được phép để trống (null). Bảng được tạo theo hướng code-first: viết model trong <code>prisma/schema.prisma</code>,
+    chạy <code>npx prisma db push</code>, sau đó <code>prisma/seed.js</code> nạp dữ liệu mẫu cho cả 3 bảng.
+    Phần mở rộng ngoài đề: <code>Dish</code> có thêm <code>imageUrl</code>, <code>imageCredit</code> để hiện ảnh món. Đề không bắt buộc hai cột này.
+  </p>
+</section>
+
+<!-- ============ 2. CHỨC NĂNG ============ -->
+<section id="chucnang">
+  <h2><span class="num">2</span>Chức năng chính</h2>
+
+  <div class="grid c2">
+    <div class="card">
+      <h3>Trang người dùng (chỉ đọc)</h3>
+      <ul class="plain">
+        <li><strong>Xem danh sách món</strong>: <span class="m get">GET</span> <code>/dishes</code></li>
+        <li><strong>Tìm món theo tên</strong>: <span class="m get">GET</span> <code>/dishes?q=phở</code></li>
+        <li><strong>Xem chi tiết món</strong>: <span class="m get">GET</span> <code>/dishes/:id</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Trang quản trị <code>/admin</code></h3>
+      <p>Làm cho cả 3 đối tượng: <code>/admin/dishes</code>, <code>/admin/chefs</code>, <code>/admin/ingredients</code></p>
+      <ul class="plain">
+        <li><strong>Xem danh sách</strong></li>
+        <li><strong>Thêm</strong> (POST)</li>
+        <li><strong>Sửa</strong> (PATCH)</li>
+        <li><strong>Xóa</strong> (DELETE), phải qua trang xác nhận</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h3>Bảng route của quản trị (giống nhau cho cả 3 đối tượng, ví dụ với món ăn)</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Thao tác</th><th>Method</th><th>URL</th><th>Kết quả</th></tr>
+      <tr><td>Danh sách</td><td><span class="m get">GET</span></td><td><code>/admin/dishes</code></td><td><span class="s ok">200</span></td></tr>
+      <tr><td>Mở form thêm</td><td><span class="m get">GET</span></td><td><code>/admin/dishes/new</code></td><td><span class="s ok">200</span></td></tr>
+      <tr><td>Thêm</td><td><span class="m post">POST</span></td><td><code>/admin/dishes</code></td><td><span class="s redir">303</span> / <span class="s bad">400</span></td></tr>
+      <tr><td>Mở form sửa</td><td><span class="m get">GET</span></td><td><code>/admin/dishes/:id/edit</code></td><td><span class="s ok">200</span> / <span class="s bad">404</span></td></tr>
+      <tr><td>Sửa</td><td><span class="m patch">PATCH</span></td><td><code>/admin/dishes/:id</code></td><td><span class="s redir">303</span> / <span class="s bad">400</span> / <span class="s bad">404</span></td></tr>
+      <tr><td>Trang xác nhận xóa</td><td><span class="m get">GET</span></td><td><code>/admin/dishes/:id/delete</code></td><td><span class="s ok">200</span> / <span class="s bad">404</span></td></tr>
+      <tr><td>Xóa</td><td><span class="m delete">DELETE</span></td><td><code>/admin/dishes/:id</code></td><td><span class="s redir">303</span> / <span class="s bad">404</span></td></tr>
+    </table></div>
+    <p class="note">Mỗi thao tác ghi đi kèm một trang GET để hiển thị trước: form thêm, form sửa hoặc trang xác nhận xóa. Không có link <code>&lt;a&gt;</code> nào trực tiếp ghi dữ liệu.</p>
+  </div>
+</section>
+
+<!-- ============ 3. LUỒNG ============ -->
+<section id="luong">
+  <h2><span class="num">3</span>Luồng hoạt động</h2>
+
+  <div class="callout">
+    <strong>Hai quy tắc xuyên suốt:</strong><br>
+    ① <strong>Đọc</strong>: mỗi request GET đều đọc lại từ database rồi render HTML, nên trang luôn khớp với dữ liệu thật.
+    Giữa các trang chỉ truyền <code>id</code> trên URL, không truyền cả object.<br>
+    ② <strong>Ghi</strong>: ghi xong, server trả <span class="s redir">303</span> để browser tự chuyển sang một trang GET (gọi là Post/Redirect/Get). Nhờ vậy bấm F5 không gửi lại lệnh ghi.
+  </div>
+
+  <div class="grid c2">
+
+    <!-- Xem danh sách + tìm -->
+    <div class="card">
+      <h3>A. Xem danh sách và tìm món</h3>
+      <ol class="flow">
+        <li><span class="who br">Người dùng</span>Mở <code>/dishes</code>, gõ "phở" rồi bấm Tìm. Form dùng <span class="m get">GET</span> nên từ khóa nằm trên URL: <code>/dishes?q=phở</code></li>
+        <li><span class="who">Server</span>Đọc <code>req.query.q</code>. Nếu không phải chuỗi (ví dụ <code>?q=a&amp;q=b</code> thành mảng) thì coi như rỗng.</li>
+        <li><span class="who db">Database</span><code>prisma.dish.findMany</code> tìm theo tên, không phân biệt hoa/thường.</li>
+        <li><span class="who">Server</span>Render <code>dishes/index</code>. Mỗi món có link <code>/dishes/&lt;id&gt;</code>, trả <span class="s ok">200</span>.</li>
+      </ol>
+    </div>
+
+    <!-- Chi tiết -->
+    <div class="card">
+      <h3>B. Xem chi tiết món</h3>
+      <ol class="flow">
+        <li><span class="who br">Người dùng</span>Bấm vào một món, browser mở <code>/dishes/2</code>.</li>
+        <li><span class="who">Server</span>Lấy <code>req.params.id</code> (chuỗi <code>"2"</code>) và đổi sang số.
+          <div class="branch">Không phải số nguyên dương (ví dụ <code>/dishes/abc</code>): trả <span class="s bad">404</span> ngay, không truy vấn database.</div></li>
+        <li><span class="who db">Database</span><code>findUnique({ where: { id } })</code>
+          <div class="branch">Trả <code>null</code> (ví dụ <code>/dishes/999</code>): trả <span class="s bad">404</span>.</div></li>
+        <li><span class="who">Server</span>Render <code>dishes/show</code> với dữ liệu món, trả <span class="s ok">200</span>.</li>
+      </ol>
+    </div>
+
+    <!-- Thêm -->
+    <div class="card">
+      <h3>C. Thêm món</h3>
+      <ol class="flow">
+        <li><span class="who br">Admin</span>Bấm "+ Thêm món", browser gửi <span class="m get">GET</span> <code>/admin/dishes/new</code> và nhận form trống.</li>
+        <li><span class="who br">Admin</span>Điền thông tin rồi bấm Lưu. Browser gửi <span class="m post">POST</span> <code>/admin/dishes</code>, dữ liệu nằm trong body.</li>
+        <li><span class="who">Server</span>Validate <code>req.body</code> để tạo ra <code>data</code> sạch, chỉ gồm các cột cho phép.
+          <div class="branch">Sai (tên trống, giá âm hoặc không phải số): trả <span class="s bad">400</span>, render lại form có thông báo lỗi và <strong>giữ giá trị đã nhập</strong>. Không ghi gì vào database.</div></li>
+        <li><span class="who db">Database</span><code>await prisma.dish.create({ data })</code></li>
+        <li><span class="who">Server</span>Trả <span class="s redir">303</span>, header <code>Location: /dishes/&lt;id mới&gt;</code></li>
+        <li><span class="who br">Browser</span>Tự gửi <span class="m get">GET</span> tới trang chi tiết của món vừa tạo và nhận <span class="s ok">200</span>.</li>
+      </ol>
+      <div class="prg">
+        <span class="box"><span class="m post">POST</span></span><span class="arrow">→</span>
+        <span class="box">ghi DB</span><span class="arrow">→</span>
+        <span class="box"><span class="s redir">303</span></span><span class="arrow">→</span>
+        <span class="box"><span class="m get">GET</span> trang kết quả</span>
+      </div>
+    </div>
+
+    <!-- Sửa -->
+    <div class="card">
+      <h3>D. Sửa món</h3>
+      <ol class="flow">
+        <li><span class="who br">Admin</span>Bấm "Sửa", browser gửi <span class="m get">GET</span> <code>/admin/dishes/2/edit</code>. Server đọc món từ database và điền sẵn vào form (<span class="s bad">404</span> nếu không có món này).</li>
+        <li><span class="who br">Admin</span>Sửa rồi bấm Lưu. Form HTML chỉ gửi được GET/POST, nên browser gửi <span class="m post">POST</span> <code>/admin/dishes/2?_method=PATCH</code></li>
+        <li><span class="who">Server</span>Middleware <code>method-override</code> đọc <code>_method</code> và đổi request thành <span class="m patch">PATCH</span>, khớp với <code>router.patch</code>.</li>
+        <li><span class="who">Server</span>Kiểm tra id có tồn tại (<span class="s bad">404</span> nếu không), sau đó validate (<span class="s bad">400</span> nếu sai, giống bước Thêm).</li>
+        <li><span class="who db">Database</span><code>await prisma.dish.update({ where: { id }, data })</code></li>
+        <li><span class="who">Server</span>Trả <span class="s redir">303</span>, browser chuyển sang <span class="m get">GET</span> <code>/dishes/2</code></li>
+      </ol>
+    </div>
+
+    <!-- Xóa -->
+    <div class="card">
+      <h3>E. Xóa món (qua trang xác nhận)</h3>
+      <ol class="flow">
+        <li><span class="who br">Admin</span>Bấm "Xóa" ở danh sách. Đây chỉ là link <span class="m get">GET</span> <code>/admin/dishes/2/delete</code> mở <strong>trang xác nhận</strong>, chưa xóa gì.</li>
+        <li><span class="who br">Admin</span>Ở trang xác nhận, bấm nút Xóa. Browser gửi <span class="m post">POST</span> <code>/admin/dishes/2?_method=DELETE</code></li>
+        <li><span class="who">Server</span><code>method-override</code> đổi request thành <span class="m delete">DELETE</span>, khớp với <code>router.delete</code>.</li>
+        <li><span class="who db">Database</span><code>await prisma.dish.delete({ where: { id } })</code>
+          <div class="branch">Món không còn tồn tại: trả <span class="s bad">404</span>.</div></li>
+        <li><span class="who">Server</span>Trả <span class="s redir">303</span> về <code>/admin/dishes</code>, vì trang chi tiết của món này không còn nữa.</li>
+      </ol>
+    </div>
+
+    <!-- Chef / Ingredient -->
+    <div class="card">
+      <h3>F. Đầu bếp và Nguyên liệu</h3>
+      <p>Luồng C, D, E <strong>giống hệt</strong> món ăn, chỉ khác URL (<code>/admin/chefs</code>, <code>/admin/ingredients</code>) và các trường trong form.</p>
+      <p><strong>Khác duy nhất:</strong> đề không có trang chi tiết cho hai đối tượng này, nên thêm, sửa hay xóa xong đều <span class="s redir">303</span> về <strong>trang danh sách</strong>.</p>
+      <div class="table-wrap"><table>
+        <tr><th>Thao tác</th><th>Redirect về</th></tr>
+        <tr><td>Thêm / sửa món</td><td><code>/dishes/:id</code></td></tr>
+        <tr><td>Xóa món</td><td><code>/admin/dishes</code></td></tr>
+        <tr><td>Thêm / sửa / xóa đầu bếp</td><td><code>/admin/chefs</code></td></tr>
+        <tr><td>Thêm / sửa / xóa nguyên liệu</td><td><code>/admin/ingredients</code></td></tr>
+      </table></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ 4. LỖI ============ -->
+<section id="loi">
+  <h2><span class="num">4</span>Mã lỗi</h2>
+  <div class="card">
+    <div class="table-wrap"><table>
+      <tr><th>Mã</th><th>Khi nào</th><th>Server làm gì</th></tr>
+      <tr><td><span class="s bad">400</span></td><td>Input sai: tên trống, giá âm hoặc không phải số</td><td>Không ghi database; render lại form có lỗi và giữ giá trị đã nhập</td></tr>
+      <tr><td><span class="s bad">404</span></td><td>Id sai định dạng (<code>/dishes/abc</code>) hoặc không tồn tại (<code>/dishes/999</code>)</td><td>Render trang 404 có link quay về</td></tr>
+      <tr><td><span class="s bad">500</span></td><td>Lỗi hệ thống, ví dụ mất kết nối database</td><td>Ghi chi tiết lỗi vào log server; người dùng chỉ thấy thông báo chung, không thấy <code>err.message</code></td></tr>
+      <tr><td><span class="s redir">303</span></td><td>Ghi thành công</td><td><code>await</code> xong lệnh ghi rồi mới redirect, để không báo thành công khi ghi thất bại</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ 5. DEMO ============ -->
+<section id="demo">
+  <h2><span class="num">5</span>Kịch bản demo (bám theo tiêu chí nghiệm thu)</h2>
+  <div class="card">
+    <ol class="demo">
+      <li>Mở <code>/dishes</code>, tìm "phở" rồi bấm vào một món. <span class="see">Thấy được: URL có <code>?q=phở</code>, trang chi tiết có <code>/dishes/:id</code>.</span></li>
+      <li>Gõ <code>/dishes/abc</code> và <code>/dishes/999</code>. <span class="see">Thấy được: cả hai đều ra trang 404.</span></li>
+      <li>Vào <code>/admin/dishes/new</code>, để trống tên rồi bấm Lưu. <span class="see">Thấy được: báo lỗi 400, các ô khác vẫn giữ giá trị đã nhập.</span></li>
+      <li>Nhập đúng rồi Lưu, sau đó bấm <strong>F5</strong> ở trang chi tiết. <span class="see">Thấy được: chuyển sang chi tiết bằng 303; F5 không tạo thêm món trùng.</span></li>
+      <li>Sửa món đó rồi Lưu. <span class="see">Thấy được: trong DevTools → Network, request là <code>POST ...?_method=PATCH</code>, sau đó 303 và trang chi tiết hiện dữ liệu mới.</span></li>
+      <li>Bấm Xóa ở danh sách, tới trang xác nhận, rồi bấm Xóa. <span class="see">Thấy được: trang xác nhận chưa xóa gì; món chỉ mất sau khi bấm nút, rồi quay về danh sách.</span></li>
+      <li>Lặp lại nhanh bước 3–6 với <code>/admin/chefs</code> và <code>/admin/ingredients</code>.</li>
+    </ol>
+  </div>
+</section>
+
+<footer class="end">Block 5 · SSR với database và ORM</footer>
+</div>
+</body>
+</html>

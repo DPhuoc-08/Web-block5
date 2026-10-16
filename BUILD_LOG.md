@@ -179,6 +179,10 @@
 ## Tài liệu trình bày
 **Đã làm:** `hotrotrinhbay.html` (cùng khung với block4): mục tiêu + tiêu chí nghiệm thu, luồng đọc/ghi (PRG) và xử lý lỗi, cây thư mục rút gọn, bảng công nghệ kèm lý do, mục "cố ý không dùng". Không so sánh với block trước (theo yêu cầu). HTML tĩnh, mở trực tiếp bằng trình duyệt; đã chụp màn hình kiểm tra hiển thị.
 
+**Đã làm (bổ sung):** `kichban.html`: cấu trúc DB (3 bảng, vì sao đủ), chức năng chính (người dùng + admin), luồng từng thao tác (danh sách/tìm, chi tiết, thêm, sửa, xoá, khác biệt của Chef/Ingredient), bảng mã lỗi, kịch bản demo theo tiêu chí nghiệm thu. Dùng chung bộ màu với `hotrotrinhbay.html`.
+
+**Quyết định:** chỉ trình bày phần đề yêu cầu; phần mở rộng (ảnh món, bộ lọc) chỉ nhắc một dòng để tránh lan man. Nội dung luồng đối chiếu với code thật (`src/routes/*`, `src/validators/*`), không chỉ theo plan.
+
 ## Seed: id bắt đầu từ 1
 **Vấn đề:** `deleteMany()` chỉ xoá dòng, không reset bộ đếm autoincrement của PostgreSQL → sau nhiều lần seed, món đầu tiên có id 7, 13...
 
