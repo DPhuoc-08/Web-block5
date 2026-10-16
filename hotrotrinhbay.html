@@ -87,7 +87,7 @@
   .s200 { background: var(--ok-soft); color: var(--ok); }
   .s303 { background: var(--accent-soft); color: var(--accent); }
   .s400 { background: var(--warn-soft); color: var(--warn); }
-  .s404, .s500 { background: var(--err-soft); color: var(--err); }
+  .s404, .s409, .s500 { background: var(--err-soft); color: var(--err); }
 
   .grid { display: grid; gap: 12px; }
   @media (min-width: 768px) { .grid.two { grid-template-columns: 1fr 1fr; } }
@@ -146,9 +146,11 @@
     <div class="box">
       <h3>Chức năng</h3>
       <ul>
-        <li><b>Người dùng</b> (chỉ đọc): thực đơn <code>/dishes</code>, tìm theo tên <code>?q=</code>, chi tiết <code>/dishes/:id</code>.</li>
-        <li><b>Quản trị</b> <code>/admin</code>: thêm, sửa, xoá <b>Món ăn</b>, <b>Đầu bếp</b>, <b>Nguyên liệu</b>.</li>
-        <li>Dữ liệu mẫu (seed): 6 món, 3 đầu bếp, 5 nguyên liệu.</li>
+        <li><b>Người dùng</b> (chỉ đọc): thực đơn có ảnh <code>/dishes</code>, lọc theo tên/loại/giá/còn phục vụ/sắp xếp, chi tiết <code>/dishes/:id</code> kèm đầu bếp và nguyên liệu.</li>
+        <li><b>Quản trị</b> <code>/admin</code>: tìm kiếm, thêm, sửa, xoá <b>Món ăn</b>, <b>Đầu bếp</b>, <b>Nguyên liệu</b>; mỗi món chọn <b>1 đầu bếp</b> và <b>tick nguyên liệu</b> lấy từ database.</li>
+        <li><b>Quan hệ khoá ngoại:</b> đầu bếp 1–n món; món n–n nguyên liệu. Xoá nguyên liệu đang dùng bị chặn (<span class="tag s409">409</span>); xoá đầu bếp còn món phải chuyển món trước.</li>
+        <li><b>Responsive:</b> điện thoại, máy tính bảng, máy tính.</li>
+        <li>Dữ liệu mẫu (seed): 20 món, 7 đầu bếp, 30 nguyên liệu.</li>
       </ul>
     </div>
     <div class="box">
@@ -178,17 +180,22 @@
   </div>
   <p class="muted">Dữ liệu trả về → EJS ghép vào khuôn → server gửi trang HTML hoàn chỉnh về trình duyệt.</p>
 
+  <h3>Quan hệ dữ liệu</h3>
+<pre><code>chefs 1 ───&lt; n  dishes          dishes.chefId → chefs.id                  (Restrict)
+dishes n &gt;───&lt; n ingredients    dish_ingredients(dishId → dishes.id        (Cascade),
+                                                 ingredientId → ingredients.id (Restrict))</code></pre>
+
   <h3>Đọc: xem thực đơn</h3>
   <div class="flow">
-    <span class="step"><code>GET /dishes?q=phở</code></span><span class="arrow">→</span>
-    <span class="step"><code>req.query.q</code></span><span class="arrow">→</span>
-    <span class="step key"><code>findMany</code> (<code>contains</code>, không phân biệt hoa thường)</span><span class="arrow">→</span>
+    <span class="step"><code>GET /dishes?q=&amp;category=&amp;price=&amp;sort=</code></span><span class="arrow">→</span>
+    <span class="step"><code>parseMenuFilters</code> (AND các tiêu chí, bỏ giá trị lạ)</span><span class="arrow">→</span>
+    <span class="step key"><code>findMany</code></span><span class="arrow">→</span>
     <span class="step">render <span class="tag s200">200</span></span>
   </div>
   <div class="flow">
     <span class="step"><code>GET /dishes/7</code></span><span class="arrow">→</span>
     <span class="step"><code>parseId(req.params.id)</code></span><span class="arrow">→</span>
-    <span class="step key"><code>findUnique</code></span><span class="arrow">→</span>
+    <span class="step key"><code>findUnique</code> + <code>include</code> đầu bếp, nguyên liệu</span><span class="arrow">→</span>
     <span class="step">có: <span class="tag s200">200</span> · sai/không có: <span class="tag s404">404</span></span>
   </div>
   <p class="muted">Link chỉ mang <code>id</code>; trang đích luôn đọc lại database, không truyền cả object giữa các trang.</p>
@@ -197,7 +204,7 @@
   <div class="flow">
     <span class="step">Form <code>POST</code> (sửa/xoá kèm <code>?_method=PATCH|DELETE</code>)</span><span class="arrow">→</span>
     <span class="step key">method-override đổi method</span><span class="arrow">→</span>
-    <span class="step">validate <code>req.body</code></span>
+    <span class="step">validate <code>req.body</code> + id đầu bếp/nguyên liệu có thật trong DB</span>
   </div>
   <div class="flow">
     <span class="arrow" style="padding-left: 2ch">↳ sai:</span>
@@ -212,15 +219,30 @@
   <ul>
     <li><b>Đích redirect:</b> thêm/sửa món → <code>/dishes/:id</code>; thêm/sửa đầu bếp, nguyên liệu → danh sách; xoá → danh sách.</li>
     <li><b>Xoá:</b> link <code>GET …/delete</code> chỉ mở trang xác nhận; xoá thật chỉ khi bấm nút gửi <code>DELETE</code>.</li>
-    <li><b>F5 sau khi lưu</b> chỉ tải lại trang <code>GET</code> đích, không gửi lại form.</li>
+    <li><b>Thêm/sửa món</b> ghi món và các dòng <code>dish_ingredients</code> trong cùng một lệnh (nested write).</li>
+    <li><b>F5 sau khi lưu</b> chỉ tải lại trang <code>GET</code> đích, không gửi lại form. URL đích kèm <code>?msg=</code> để hiện thông báo.</li>
   </ul>
+
+  <h3>Quy tắc xoá</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Xoá</th><th>Kết quả</th></tr></thead>
+    <tbody>
+      <tr><td>Món ăn</td><td>Xoá món + dòng nối của món (Cascade); đầu bếp, nguyên liệu giữ nguyên <span class="tag s303">303</span></td></tr>
+      <tr><td>Nguyên liệu đang dùng</td><td>Trang xác nhận liệt kê món đang dùng, không có nút Xoá; request <code>DELETE</code> → <span class="tag s409">409</span>; database cũng chặn (Restrict)</td></tr>
+      <tr><td>Đầu bếp còn món</td><td>Chọn đầu bếp nhận món → <b>một transaction</b>: chuyển toàn bộ món + xoá đầu bếp <span class="tag s303">303</span>; chưa chọn → <span class="tag s409">409</span></td></tr>
+      <tr><td>Nguyên liệu / đầu bếp chưa dùng</td><td>Xoá được ngay <span class="tag s303">303</span></td></tr>
+    </tbody>
+  </table>
+  </div>
 
   <h3>Xử lý lỗi</h3>
   <div class="table-wrap">
   <table>
     <thead><tr><th>Tình huống</th><th>Mã</th><th>Server làm gì</th></tr></thead>
     <tbody>
-      <tr><td>Tên trống, giá âm/không phải số nguyên</td><td><span class="tag s400">400</span></td><td>Không ghi DB, render lại form báo lỗi đúng ô</td></tr>
+      <tr><td>Tên trống, giá sai, chưa chọn loại/đầu bếp/nguyên liệu, id bịa, tên trùng</td><td><span class="tag s400">400</span></td><td>Không ghi DB, render lại form báo lỗi đúng ô, giữ ô đã tick</td></tr>
+      <tr><td>Xoá nguyên liệu đang dùng / đầu bếp còn món chưa chọn người nhận</td><td><span class="tag s409">409</span></td><td>Không xoá, hiện lại trang xác nhận kèm các món liên quan</td></tr>
       <tr><td><code>/dishes/abc</code>, <code>/dishes/999999</code>, sửa/xoá id không có</td><td><span class="tag s404">404</span></td><td>Trang “Không tìm thấy”; id sai định dạng thì không truy vấn DB</td></tr>
       <tr><td>Mất kết nối database</td><td><span class="tag s500">500</span></td><td>Ghi stack vào log server; người dùng chỉ thấy thông báo chung</td></tr>
     </tbody>
@@ -229,18 +251,18 @@
 
   <h3>Code nằm ở đâu</h3>
 <pre><code>block5/
-├── prisma/schema.prisma      3 model Dish, Chef, Ingredient (code-first → npx prisma db push)
-├── prisma/seed.js            Dữ liệu mẫu cho cả 3 bảng (npx prisma db seed)
+├── prisma/schema.prisma      4 model Dish, Chef, Ingredient, DishIngredient + khoá ngoại (npx prisma db push)
+├── prisma/seed.js            20 món, 7 đầu bếp, 30 nguyên liệu, id từ 1 (npx prisma db seed)
 ├── prisma.config.js          Cấu hình Prisma CLI: nạp .env, lệnh seed
 ├── certs/supabase-ca.crt     Chứng chỉ CA để kết nối SSL có xác minh
-├── public/css/style.css      Giao diện
+├── public/css/style.css      Giao diện + responsive (điểm chuyển 1024 / 820 / 600px)
 └── src/
-    ├── app.js                Middleware (static, urlencoded, method-override), router, 404/500
-    ├── db.js                 Một PrismaClient dùng chung (adapter-pg + SSL)
-    ├── routes/dishes.js      Trang người dùng (GET)
-    ├── routes/admin/         dishes.js · chefs.js · ingredients.js (CRUD, cùng một khuôn)
-    ├── validators/           parseId + validate từng model → data sạch, errors, values
-    └── views/                EJS: dishes/, admin/, partials/, 404, 500</code></pre>
+    ├── app.js                Middleware (static, urlencoded, method-override, thông báo ?msg), router, 404/500
+    ├── db.js                 Một PrismaClient dùng chung (adapter-pg + SSL), nhận diện lỗi P2025/P2002/P2003
+    ├── routes/dishes.js      Trang người dùng (GET): thực đơn + lọc, chi tiết
+    ├── routes/admin/         dishes.js · chefs.js (chuyển món + xoá) · ingredients.js (chặn xoá 409)
+    ├── validators/           parseId, menu-filters, validate từng model → data sạch, errors, values
+    └── views/                EJS: dishes/, admin/, partials/ (header, dish-row, admin-search...), 404, 500</code></pre>
 </section>
 
 <!-- ============ 3. CÔNG NGHỆ ============ -->
@@ -259,7 +281,10 @@
       <tr><td><code>dotenv</code> + <code>.env</code></td><td>Giữ <code>DATABASE_URL</code></td><td>Một cách nạp cho cả app lẫn Prisma CLI; <code>.env</code> nằm trong <code>.gitignore</code></td></tr>
       <tr><td><code>method-override</code></td><td>Gửi <code>PATCH</code>/<code>DELETE</code> từ form</td><td>Form HTML chỉ gửi được <code>GET</code>/<code>POST</code></td></tr>
       <tr><td><code>express.urlencoded</code></td><td>Đọc dữ liệu form vào <code>req.body</code></td><td>Middleware có sẵn, không cài thêm</td></tr>
-      <tr><td>CSS thuần</td><td>Giao diện</td><td>Không phụ thuộc framework; màu đặt ở biến <code>:root</code></td></tr>
+      <tr><td>Khoá ngoại + bảng nối tường minh</td><td>Quan hệ món – đầu bếp – nguyên liệu</td><td>Restrict/Cascade đặt ở database làm lớp chặn cuối; bảng nối ngầm định của Prisma luôn Cascade nên không chặn được xoá nguyên liệu</td></tr>
+      <tr><td><code>prisma.$transaction</code></td><td>Chuyển món + xoá đầu bếp</td><td>Hai thao tác cùng thành công hoặc cùng huỷ</td></tr>
+      <tr><td>CSS thuần + media query</td><td>Giao diện, responsive</td><td>Không phụ thuộc framework, không JavaScript; bảng admin thành thẻ ở ≤ 820px; màu đặt ở biến <code>:root</code></td></tr>
+      <tr><td>Wikimedia Commons, Flickr</td><td>Ảnh món ăn</td><td>Ảnh thật có giấy phép mở, nhúng bằng link, ghi công tác giả cạnh ảnh</td></tr>
       <tr><td>Git + GitHub</td><td>Lưu phiên bản</td><td>Mỗi bước một commit để quay lại khi có sự cố; <code>.env</code>, <code>node_modules</code> không lên repo</td></tr>
     </tbody>
   </table>
@@ -272,7 +297,9 @@
     <li><b>Đưa nguyên <code>req.body</code> vào Prisma:</b> validator chỉ giữ các cột được phép; trường lạ như <code>id</code> bị bỏ.</li>
     <li><b><code>required</code>/<code>min</code> trên input:</b> để server là nơi kiểm tra và thấy được phản hồi <span class="tag s400">400</span>.</li>
     <li><b>Hiện <code>err.message</code> của database:</b> lộ cấu trúc bảng; chỉ ghi vào log server.</li>
-    <li><b>Unique constraint chống bấm submit 2 lần:</b> ngoài tiêu chí; PRG đã đủ cho tiêu chí F5.</li>
+    <li><b>Unique constraint cho tên món</b> (chống bấm submit 2 lần): ngoài tiêu chí; PRG đã đủ cho tiêu chí F5. Tên đầu bếp và nguyên liệu thì có <code>@unique</code> để danh sách chọn không bị trùng.</li>
+    <li><b>Xoá đầu bếp kéo theo xoá món (Cascade):</b> mất dữ liệu thực đơn hàng loạt mà không thấy trước; món thuộc về nhà hàng, không thuộc về người nấu.</li>
+    <li><b>Hiển thị nội dung <code>?msg=</code> trực tiếp:</b> chỉ nhận mã có trong bảng thông báo cố định, tránh chèn nội dung qua URL.</li>
     <li><b>Tắt kiểm tra chứng chỉ SSL</b> (<code>rejectUnauthorized: false</code>): kết nối có thể bị giả mạo.</li>
   </ul>
 </section>
