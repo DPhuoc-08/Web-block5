@@ -19,9 +19,9 @@
       <tbody>
         <% ingredients.forEach(i => { %>
           <tr>
-            <td class="num"><%= i.id %></td>
-            <td><%= i.name %></td>
-            <td><%= i.unit ?? "—" %></td>
+            <td class="num" data-label="Mã"><%= i.id %></td>
+            <td class="title" data-label="Tên"><%= i.name %></td>
+            <td data-label="Đơn vị"><%= i.unit ?? "—" %></td>
             <td class="actions">
               <a class="btn btn-sm" href="/admin/ingredients/<%= i.id %>/edit">Sửa</a>
               <a class="btn btn-sm danger-text" href="/admin/ingredients/<%= i.id %>/delete">Xoá</a>

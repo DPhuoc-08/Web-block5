@@ -19,12 +19,13 @@
       <tbody>
         <% dishes.forEach(d => { %>
           <tr>
-            <td class="num"><%= d.id %></td>
-            <td><% if (d.imageUrl) { %><img class="table-thumb" src="<%= d.imageUrl %>" alt="" loading="lazy" referrerpolicy="no-referrer"><% } else { %><span class="muted">—</span><% } %></td>
-            <td><a href="/dishes/<%= d.id %>"><%= d.name %></a></td>
-            <td><%= d.price.toLocaleString("vi-VN") %>đ</td>
-            <td><%= d.category ?? "—" %></td>
-            <td><span class="badge <%= d.available ? "on" : "off" %>"><%= d.available ? "Đang phục vụ" : "Tạm hết" %></span></td>
+            <%# data-label: nhãn cột hiện trên điện thoại khi bảng chuyển thành thẻ (xem style.css). %>
+            <td class="num" data-label="Mã"><%= d.id %></td>
+            <td class="thumb" data-label="Ảnh"><% if (d.imageUrl) { %><img class="table-thumb" src="<%= d.imageUrl %>" alt="" loading="lazy" referrerpolicy="no-referrer"><% } else { %><span class="muted">—</span><% } %></td>
+            <td class="title" data-label="Tên"><a href="/dishes/<%= d.id %>"><%= d.name %></a></td>
+            <td data-label="Giá"><%= d.price.toLocaleString("vi-VN") %>đ</td>
+            <td data-label="Loại"><%= d.category ?? "—" %></td>
+            <td data-label="Tình trạng"><span class="badge <%= d.available ? "on" : "off" %>"><%= d.available ? "Đang phục vụ" : "Tạm hết" %></span></td>
             <%# Hai link GET chỉ mở trang (form sửa, trang xác nhận xoá); việc ghi diễn ra ở form trên các trang đó. %>
             <td class="actions">
               <a class="btn btn-sm" href="/admin/dishes/<%= d.id %>/edit">Sửa</a>

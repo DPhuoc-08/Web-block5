@@ -248,3 +248,21 @@
 **Đã kiểm tra:** 14 tổ hợp lọc (từng tiêu chí, kết hợp nhiều tiêu chí, giá trị sai, `?q=a&q=b`) ra đúng số món và thứ tự; tìm kiếm admin 3 thực thể đúng; link ảnh `javascript:` và `abc` → `400`, link hợp lệ → `303` + có ảnh xem trước; CRUD chefs 25/25, ingredients 25/25; chụp màn hình 1280px và 375px, sửa 2 lỗi thấy được (nhóm 1 món để trống cột phải; ảnh dọc bị kéo cao ở trang chi tiết). Seed lại sau test → id vẫn 1–6.
 
 **Phương án đã bỏ:** lưới thẻ ảnh lớn kiểu app giao đồ ăn (xa bố cục mockup đã duyệt); giữ nguyên nền kem + serif của mockup (người dùng muốn tránh "AI look").
+
+## Tái cấu trúc theo yêu cầu mới của giảng viên
+
+### R1 — Responsive (ưu tiên số 1)
+**Đã làm:** viết lại phần responsive trong `public/css/style.css` với 3 điểm chuyển; thêm `data-label` + class `title`/`thumb` cho các ô bảng admin.
+| Điểm chuyển | Thay đổi |
+| :--- | :--- |
+| ≤ 1024px (máy tính bảng) | Giảm khoảng cách và cỡ tiêu đề trang chi tiết |
+| ≤ 820px (máy tính bảng dọc + điện thoại) | **Bảng admin → thẻ**: mỗi dòng một thẻ, nhãn cột lấy từ `data-label`; thẻ xếp lưới (1 cột điện thoại, 2 cột tablet dọc); món ăn: ảnh nhỏ cạnh tên; đầu bếp/nguyên liệu: tên lên đầu thẻ; nút Sửa/Xoá ≥ 44px |
+| ≤ 600px (điện thoại) | Header một dòng (ẩn "/ Quản trị" vì nav đã có); chip loại cuộn ngang 1 dòng; ô lọc xếp lưới 2 cột; tab admin cuộn ngang; ô tìm admin + nút Tìm cùng hàng; nút trong form chia đều chiều ngang |
+
+**Lý do:**
+- **Ngưỡng 820px cho bảng:** bảng món 7 cột tràn ngang ở iPad dọc 768px (nút "Xoá" bị cắt khi chụp thử); bảng chỉ cuộn ngang là kém thân thiện trên màn hình cảm ứng.
+- **Không JavaScript:** toàn bộ chuyển đổi bằng CSS (`display`, `grid`, `:has()`), giữ đúng yêu cầu SSR thuần.
+
+**Đã kiểm tra:** chụp màn hình trước/sau ở 360px (thực đơn, admin món, admin đầu bếp, form sửa, chi tiết) và 768px (thực đơn, admin món); CRUD chefs 25/25, ingredients 25/25; các trang chính `200`, id sai `404`.
+
+**Phương án đã bỏ:** gói bộ lọc vào `<details>` trên điện thoại — `<details>` không mở sẵn được riêng cho màn hình lớn nếu không có JavaScript; thay bằng bố cục lọc gọn (chip cuộn ngang + lưới 2 cột).
